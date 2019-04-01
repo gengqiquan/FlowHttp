@@ -3,7 +3,9 @@ package com.gengqiquan.flow.interfaces;
 import java.io.IOException;
 
 public interface Stream {
-   void async(CallBack callBack);
+    void async(CallBack callBack);
 
-    <T > T sync() throws IOException;
+    <T> T sync() throws IOException;
+
+    <T> T transform(Transformer transformer) throws IOException;
 }

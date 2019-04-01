@@ -1,5 +1,6 @@
 package com.gengqiquan.flowhttp;
 
+import android.content.Intent;
 import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import com.gengqiquan.flow.Flow;
 import com.gengqiquan.flow.Result;
 import com.gengqiquan.flow.interfaces.Converter;
 import com.gengqiquan.flow.interfaces.Func0;
+import com.gengqiquan.flow.interfaces.Transformer;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
@@ -19,6 +21,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import okhttp3.ResponseBody;
+import rx.Observable;
+import rx.Subscriber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Flow.baseUrl("https://api.bzqll.com/");
         findViewById(R.id.tv_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -52,29 +57,29 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 };
-                Flow.with("music/netease/song?key=579621905&id=526307800")
-                        .converter(converter)
-                        .get()
-                        .async(new Result<Modell>() {
-                            @Override
-                            public void success(Modell bean) {
-                                ((TextView) findViewById(R.id.tv_btn)).setText(bean.toString());
-                            }
-                        });
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            Modell bean = Flow.with("music/netease/song?key=579621905&id=526307800")
-//                                    .converter(converter)
-//                                    .get().sync();
-//                            Log.e("MainActivity", "success: " + bean.toString());
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                    }
-//                }).start();
+//                Flow.with("music/netease/song?key=579621905&id=526307800")
+//                        .converter(converter)
+//                        .get()
+//                        .async(new Result<Modell>() {
+//                            @Override
+//                            public void success(Modell bean) {
+//                                ((TextView) findViewById(R.id.tv_btn)).setText(bean.toString());
+//                            }
+//                        });
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Flow.with("music/netease/song?key=579621905&id=526307800")
+                                    .converter(converter)
+                                    .get().transform(new RxTransformFactory<Observable<String>>());
+                            Log.e("MainActivity", "success: " + bean.toString());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }).start();
             }
         });
     }
