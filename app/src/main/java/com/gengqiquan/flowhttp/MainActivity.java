@@ -22,7 +22,9 @@ import java.lang.reflect.Type;
 
 import okhttp3.ResponseBody;
 import rx.Observable;
+import rx.Scheduler;
 import rx.Subscriber;
+import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -72,8 +74,25 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             Flow.with("music/netease/song?key=579621905&id=526307800")
                                     .converter(converter)
-                                    .get().transform(new RxTransformFactory<Observable<String>>());
-                            Log.e("MainActivity", "success: " + bean.toString());
+                                    .get().transform(new RxTransformFactory<Observable<String>>())
+                                    .subscribeOn(Schedulers.io())
+                            .subscribe(new Subscriber<String>() {
+                                @Override
+                                public void onCompleted() {
+
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+
+                                }
+
+                                @Override
+                                public void onNext(String s) {
+                                    Log.e("MainActivity", "success: " + s);
+                                }
+                            });
+
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

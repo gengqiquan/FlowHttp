@@ -69,10 +69,10 @@ public class CallProxy implements Stream {
     }
 
     @Override
-    public <T> T transform(Transformer transformer) throws IOException {
+    public <T> T transform(Transformer<T> transformer) throws IOException {
         Response response = call.execute();
         if (response.code() == 200) {
-            return transformer.transform(response.body().string());
+            return (T)transformer.transform(response.body().string());
         }
         throw new HttpException(response);
     }

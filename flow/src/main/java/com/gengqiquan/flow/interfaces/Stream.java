@@ -7,5 +7,5 @@ public interface Stream {
 
     <T> T sync() throws IOException;
 
-    <T> T transform(Transformer transformer) throws IOException;
+    <T> T transform(Transformer<T>  transformer) throws IOException;
 }
