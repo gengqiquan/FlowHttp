@@ -1,10 +1,11 @@
 package com.gengqiquan.flow;
 
 import android.app.Activity;
+import android.app.Application;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.gengqiquan.flow.interfaces.CallBack;
-import com.gengqiquan.flow.interfaces.Converter;
 import com.gengqiquan.flow.interfaces.Scheduler;
 import com.gengqiquan.flow.interfaces.Stream;
 import com.gengqiquan.flow.interfaces.Transformer;
@@ -22,19 +23,32 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
+/**
+ * 网络请求门面类
+ *
+ * @author gengqiquan
+ * @date 2019-07-09 15:26
+ */
 public class Flow {
     private static final String TAG = "FlowHttp";
     private static volatile okhttp3.Call.Factory mService;
-    private static volatile HttpUrl baseUrl;
-    final public static String GET = "GET";
-    final public static String POST = "POST";
+    private static volatile HttpUrl mBaseUrl;
+    private volatile static Converter mConverter;
+    private volatile static MediaType mContentType;
+    private volatile static Application mApp;
+    final private static String GET = "GET";
+    final private static String POST = "POST";
 
-    public static okhttp3.Call.Factory getService() {
+    private static okhttp3.Call.Factory getService() {
         if (mService == null) {
             synchronized (Flow.class) {
                 if (mService == null) {
-                    mService = new OkHttpClient.Builder().connectTimeout(3, TimeUnit.SECONDS).readTimeout(15, TimeUnit.SECONDS)
-                            .writeTimeout(15, TimeUnit.SECONDS).build();
+                    mService = new OkHttpClient
+                            .Builder()
+                            .connectTimeout(3, TimeUnit.SECONDS)
+                            .readTimeout(15, TimeUnit.SECONDS)
+                            .writeTimeout(15, TimeUnit.SECONDS)
+                            .build();
                 }
             }
         }
@@ -47,10 +61,10 @@ public class Flow {
         if (!"".equals(pathSegments.get(pathSegments.size() - 1))) {
             throw new IllegalArgumentException("baseUrl must end in /: " + baseUrl);
         }
-        Flow.baseUrl = baseUrl;
+        Flow.mBaseUrl = baseUrl;
     }
 
-    public static void baseUrl(String baseUrl) {
+    private static void baseUrl(String baseUrl) {
         checkNotNull(baseUrl, "baseUrl == null");
         HttpUrl httpUrl = HttpUrl.parse(baseUrl);
         if (httpUrl == null) {
@@ -59,13 +73,43 @@ public class Flow {
         baseUrl(httpUrl);
     }
 
+    public static void init(@NonNull Application application, @NonNull ConfigBuilder builder) {
+        mApp = application;
+        baseUrl(builder.baseUrl);
+        mService = builder.mService;
+        mConverter = builder.converter;
+        mContentType = builder.contentType;
+    }
+
+    public static class ConfigBuilder {
+        okhttp3.Call.Factory mService;
+        String baseUrl;
+        Converter converter;
+        MediaType contentType;
+
+        public ConfigBuilder(@NonNull String baseUrl) {
+            this.baseUrl = baseUrl;
+        }
+
+        public ConfigBuilder client(@NonNull Call.Factory client) {
+            this.mService = client;
+            return this;
+        }
+
+        public ConfigBuilder converter(@NonNull Converter converter) {
+            this.converter = converter;
+            return this;
+        }
+
+        public ConfigBuilder contentType(@NonNull MediaType contentType) {
+            this.contentType = contentType;
+            return this;
+        }
+    }
+
     public static Builder with(String url) {
         return new Builder(url);
     }
-
-//    public Builder with(File file) {
-//        return new Builder();
-//    }
 
     public static class Builder implements Stream {
         String method = GET;
@@ -80,17 +124,17 @@ public class Flow {
             this.url = url;
         }
 
-        public Builder Params(Map<String, String> params) {
+        public Builder Params(@NonNull Map<String, String> params) {
             this.params.putAll(params);
             return this;
         }
 
-        public Builder Params(String key, String value) {
+        public Builder Params(@NonNull String key, String value) {
             this.params.put(key, value);
             return this;
         }
 
-        public Builder ParamsNotNull(String key, String value) {
+        public Builder ParamsNotNull(@NonNull String key, String value) {
             if (isNULL(value)) {
                 return this;
             }
@@ -98,7 +142,7 @@ public class Flow {
             return this;
         }
 
-        public Builder Headers(Map<String, String> headers) {
+        public Builder Headers(@NonNull Map<String, String> headers) {
             this.headers.putAll(headers);
             return this;
         }
@@ -108,27 +152,36 @@ public class Flow {
             return this;
         }
 
-        public Builder contentType(MediaType contentType) {
+        public Builder contentType(@NonNull MediaType contentType) {
             this.contentType = contentType;
             return this;
         }
 
-        public Builder scheduler(Scheduler scheduler) {
+        @Deprecated
+        public Builder scheduler(@NonNull Scheduler scheduler) {
             this.scheduler = scheduler;
             return this;
         }
 
-        public Builder converter(Converter converter) {
+        public Builder converter(@NonNull Converter converter) {
             this.converter = converter;
             return this;
         }
 
-        public Builder bind(Activity converter) {
+        /**
+         * todo//利用fragment 管理声明周期自动取消请求
+         *
+         * @author gengqiquan
+         * @date 2019-07-09 14:57
+         */
+        @Deprecated
+        public Builder bind(Activity activity) {
+
             return this;
         }
 
         private Stream builder() {
-            RequestBuilder builder = new RequestBuilder(this.method, Flow.baseUrl, this.url, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
+            RequestBuilder builder = new RequestBuilder(this.method, Flow.mBaseUrl, this.url, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
             if (!params.isEmpty()) {
                 for (Map.Entry<String, String> entry : this.headers.entrySet()) {
                     String key = entry.getKey();
@@ -141,7 +194,12 @@ public class Flow {
             if (scheduler == null) {
                 scheduler = AndroidSchedulers.mainThread();
             }
-
+            if (converter == null) {
+                converter = Flow.mConverter;
+            }
+            if (converter == null) {
+                converter = Converter.Default();
+            }
             return new CallProxy(call, converter, scheduler);
         }
 
@@ -156,18 +214,18 @@ public class Flow {
         }
 
         @Override
-        public void async(CallBack callBack) {
-            builder().async(callBack);
+        public void listen(CallBack callBack) {
+            builder().listen(callBack);
         }
 
         @Override
-        public <T> T sync() throws IOException {
-            return builder().sync();
+        public <T> T await() throws IOException {
+            return builder().await();
         }
 
         @Override
-        public <T,R> T transform(Transformer<? super T, ? super R>  transformer) throws IOException {
-            return (T)builder().transform(transformer);
+        public <T, R> T transform(Transformer<? super T, ? super R> transformer) throws IOException {
+            return (T) builder().transform(transformer);
         }
 
         private boolean hasBody() {

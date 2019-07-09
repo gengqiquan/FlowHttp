@@ -1,7 +1,6 @@
 package com.gengqiquan.flowhttp;
 
 import com.gengqiquan.flow.interfaces.Transformer;
-import com.google.gson.Gson;
 
 import rx.Observable;
 import rx.Subscriber;

@@ -4,6 +4,12 @@ import com.gengqiquan.flow.interfaces.CallBack;
 import com.gengqiquan.flow.interfaces.Func0;
 import com.gengqiquan.flow.interfaces.Func1;
 
+/**
+ * 请求结果封装
+ *
+ * @author gengqiquan
+ * @date 2019-07-09 15:28
+ */
 public class Result<T> implements CallBack<T> {
     Func0<T> success;
     Func1 error;

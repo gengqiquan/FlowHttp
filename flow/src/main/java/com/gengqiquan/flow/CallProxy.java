@@ -1,7 +1,6 @@
 package com.gengqiquan.flow;
 
 import com.gengqiquan.flow.interfaces.CallBack;
-import com.gengqiquan.flow.interfaces.Converter;
 import com.gengqiquan.flow.interfaces.Scheduler;
 import com.gengqiquan.flow.interfaces.Stream;
 import com.gengqiquan.flow.interfaces.Transformer;
@@ -11,6 +10,12 @@ import java.io.IOException;
 import okhttp3.Call;
 import okhttp3.Response;
 
+/**
+ * 实际请求；处理、分发请求结果类
+ *
+ * @author gengqiquan
+ * @date 2019-07-09 15:25
+ */
 public class CallProxy implements Stream {
     Call call;
     Converter converter;
@@ -25,25 +30,36 @@ public class CallProxy implements Stream {
     }
 
     @Override
-    public void async(final CallBack callBack) {
+    public <T> void listen(final CallBack callBack) {
         call.enqueue(new okhttp3.Callback() {
             @Override
             public void onResponse(Call call, final Response response) {
-                scheduler.schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (response.code() == 200) {
-                            try {
-                                callBack.success(converter.convert(response.body()));
-                            } catch (IOException e) {
+                if (response.code() == 200) {
+                    try {
+                        final T bean = converter.convert(response.body());
+                        scheduler.schedule(new Runnable() {
+                            @Override
+                            public void run() {
+                                callBack.success(bean);
+                            }
+                        });
+                    } catch (final IOException e) {
+                        scheduler.schedule(new Runnable() {
+                            @Override
+                            public void run() {
                                 callBack.error(e);
                             }
-                        } else {
-                            callBack.error(new HttpException(response));
-                        }
+                        });
                     }
-                });
+                } else {
+                    scheduler.schedule(new Runnable() {
+                        @Override
+                        public void run() {
+                            callBack.error(new HttpException(response));
 
+                        }
+                    });
+                }
             }
 
             @Override
@@ -60,7 +76,7 @@ public class CallProxy implements Stream {
     }
 
     @Override
-    public <T> T sync() throws IOException {
+    public <T> T await() throws IOException {
         Response response = call.execute();
         if (response.code() == 200) {
             return converter.convert(response.body());

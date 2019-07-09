@@ -7,7 +7,7 @@ import com.gengqiquan.flow.interfaces.Scheduler;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class AndroidSchedulers {
+ class AndroidSchedulers {
     /**
      * A {@link Scheduler} which executes actions on the Android UI thread.
      */
