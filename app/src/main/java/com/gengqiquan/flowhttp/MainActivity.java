@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Flow.baseUrl("https://api.bzqll.com/");
+        Flow.baseUrl("https://api.apiopen.top/");
         findViewById(R.id.tv_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,26 +72,27 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            Flow.with("music/netease/song?key=579621905&id=526307800")
+                            Flow.with("recommendPoetry")
                                     .converter(converter)
-                                    .get().transform(new RxTransformFactory<Observable<String>>())
+                                    .get()
+                                    .transform(new RxTransformFactory<Observable<Modell>, Modell>())
                                     .subscribeOn(Schedulers.io())
-                            .subscribe(new Subscriber<String>() {
-                                @Override
-                                public void onCompleted() {
+                                    .subscribe(new Subscriber<Modell>() {
+                                        @Override
+                                        public void onCompleted() {
 
-                                }
+                                        }
 
-                                @Override
-                                public void onError(Throwable e) {
+                                        @Override
+                                        public void onError(Throwable e) {
+                                            e.printStackTrace();
+                                        }
 
-                                }
-
-                                @Override
-                                public void onNext(String s) {
-                                    Log.e("MainActivity", "success: " + s);
-                                }
-                            });
+                                        @Override
+                                        public void onNext(Modell s) {
+                                            Log.e("MainActivity", "success: " + s.toString());
+                                        }
+                                    });
 
                         } catch (IOException e) {
                             e.printStackTrace();

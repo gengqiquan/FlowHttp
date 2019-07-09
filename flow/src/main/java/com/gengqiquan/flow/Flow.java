@@ -166,7 +166,7 @@ public class Flow {
         }
 
         @Override
-        public <T> T transform(Transformer<T>  transformer) throws IOException {
+        public <T,R> T transform(Transformer<? super T, ? super R>  transformer) throws IOException {
             return (T)builder().transform(transformer);
         }
 
