@@ -4,11 +4,17 @@ import android.app.Activity;
 import android.app.Application;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 
 import com.gengqiquan.flow.interfaces.CallBack;
 import com.gengqiquan.flow.interfaces.Scheduler;
 import com.gengqiquan.flow.interfaces.Stream;
 import com.gengqiquan.flow.interfaces.Transformer;
+import com.gengqiquan.flow.lifecycle.ActivityFragmentLifecycle;
+import com.gengqiquan.flow.lifecycle.LifeEvent;
+import com.gengqiquan.flow.lifecycle.LifecycleListener;
+import com.gengqiquan.flow.lifecycle.RequestManager;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -168,17 +174,60 @@ public class Flow {
             return this;
         }
 
+        ActivityFragmentLifecycle lifecycle;
+        LifeEvent lifeEvent = LifeEvent.DESTROY;
+
         /**
-         * todo//利用fragment 管理声明周期自动取消请求
+         * 绑定生命周期自动取消请求
          *
          * @author gengqiquan
          * @date 2019-07-09 14:57
          */
-        @Deprecated
-        public Builder bind(Activity activity) {
 
+        public Builder bind(Activity activity) {
+            lifecycle = RequestManager.get().get(activity);
             return this;
         }
+
+        public Builder bind(Activity activity, LifeEvent lifeEvent) {
+            this.lifeEvent = lifeEvent;
+            lifecycle = RequestManager.get().get(activity);
+            return this;
+        }
+
+        public Builder bind(FragmentActivity activity) {
+            lifecycle = RequestManager.get().get(activity);
+            return this;
+        }
+
+        public Builder bind(FragmentActivity activity, LifeEvent lifeEvent) {
+            this.lifeEvent = lifeEvent;
+            lifecycle = RequestManager.get().get(activity);
+            return this;
+        }
+
+        public Builder bind(Fragment fragment) {
+            lifecycle = RequestManager.get().get(fragment);
+            return this;
+        }
+
+        public Builder bind(Fragment fragment, LifeEvent lifeEvent) {
+            this.lifeEvent = lifeEvent;
+            lifecycle = RequestManager.get().get(fragment);
+            return this;
+        }
+
+        public Builder bind(android.app.Fragment fragment) {
+            lifecycle = RequestManager.get().get(fragment);
+            return this;
+        }
+
+        public Builder bind(android.app.Fragment fragment, LifeEvent lifeEvent) {
+            this.lifeEvent = lifeEvent;
+            lifecycle = RequestManager.get().get(fragment);
+            return this;
+        }
+
 
         private Stream builder() {
             RequestBuilder builder = new RequestBuilder(this.method, Flow.mBaseUrl, this.url, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
@@ -190,7 +239,7 @@ public class Flow {
                 }
             }
             Request request = builder.build();
-            Call call = getService().newCall(request);
+            final Call call = getService().newCall(request);
             if (scheduler == null) {
                 scheduler = AndroidSchedulers.mainThread();
             }
@@ -200,8 +249,26 @@ public class Flow {
             if (converter == null) {
                 converter = Converter.Default();
             }
+            if (lifecycle != null) {
+                lifecycle.addListener(new LifecycleListener() {
+                    @Override
+                    public void onStop() {
+                        if (lifeEvent == LifeEvent.STOP && !call.isCanceled() && !call.isExecuted()) {
+                            call.cancel();
+                        }
+                    }
+
+                    @Override
+                    public void onDestroy() {
+                        if (lifeEvent == LifeEvent.DESTROY && !call.isCanceled() && !call.isExecuted()) {
+                            call.cancel();
+                        }
+                    }
+                });
+            }
             return new CallProxy(call, converter, scheduler);
         }
+
 
         public Builder get() {
             this.method = GET;

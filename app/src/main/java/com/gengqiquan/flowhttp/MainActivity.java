@@ -30,47 +30,47 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 //
-                Flow.with("recommendPoetry")
-                        .converter(modellConverter)
-                        .get()
-                        .listen(new Result<Modell>() {
-                            @Override
-                            public void success(Modell bean) {
-                                ((TextView) findViewById(R.id.tv_btn)).setText(bean.toString());
-                            }
-                        });
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            Flow.with("recommendPoetry")
-//                                    .converter(modellConverter)
-//                                    .get()
-//                                    .transform(new RxTransformFactory<Observable<Modell>, Modell>())
-//                                    .subscribeOn(Schedulers.io())
-//                                    .subscribe(new Subscriber<Modell>() {
-//                                        @Override
-//                                        public void onCompleted() {
-//
-//                                        }
-//
-//                                        @Override
-//                                        public void onError(Throwable e) {
-//                                            e.printStackTrace();
-//                                        }
-//
-//                                        @Override
-//                                        public void onNext(Modell s) {
-//                                            Log.e("MainActivity", "success: " + s.toString());
-//                                        }
-//                                    });
-//
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                    }
-//                }).start();
+//                Flow.with("recommendPoetry")
+//                        .converter(modellConverter)
+//                        .get()
+//                        .listen(new Result<Modell>() {
+//                            @Override
+//                            public void success(Modell bean) {
+//                                ((TextView) findViewById(R.id.tv_btn)).setText(bean.toString());
+//                            }
+//                        });
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Flow.with("recommendPoetry")
+                                    .converter(modellConverter)
+                                    .get()
+                                    .transform(RxTransformFactory.Default())
+                                    .subscribeOn(Schedulers.io())
+                                    .subscribe(new Subscriber<Modell>() {
+                                        @Override
+                                        public void onCompleted() {
+
+                                        }
+
+                                        @Override
+                                        public void onError(Throwable e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        @Override
+                                        public void onNext(Modell s) {
+                                            Log.e("MainActivity", "success: " + s.toString());
+                                        }
+                                    });
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }).start();
             }
         });
     }

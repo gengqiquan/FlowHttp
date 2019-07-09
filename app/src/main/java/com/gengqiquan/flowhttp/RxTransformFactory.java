@@ -17,4 +17,7 @@ public class RxTransformFactory<T, R> implements Transformer<T, R> {
         });
     }
 
+    public static Transformer<Observable<Modell>, Modell> Default() {
+        return new RxTransformFactory<>();
+    }
 }
