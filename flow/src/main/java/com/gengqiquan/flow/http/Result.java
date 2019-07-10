@@ -33,6 +33,10 @@ public class Result<T> implements CallBack<T> {
     }
 
     @Override
+    public void start() {
+    }
+
+    @Override
     public void error(Throwable throwable) {
         throwable.printStackTrace();
         if (error != null) {

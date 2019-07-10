@@ -1,5 +1,6 @@
 package com.gengqiquan.flow.http;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.gengqiquan.flow.converter.Converter;
@@ -69,12 +70,13 @@ public class CallProxy implements Stream {
     }
 
     @Override
-    public <T> void listen(final CallBack callBack) {
+    public <T> void listen(@NonNull final CallBack callBack) {
         if (detach()) {
             Log.d("CallProxy", "request detach ");
             return;
         }
         watch();
+        callBack.start();
         call.enqueue(new okhttp3.Callback() {
             @Override
             public void onResponse(Call call, final Response response) {

@@ -1,11 +1,13 @@
 package com.gengqiquan.flow.interfaces;
 
+import android.support.annotation.NonNull;
+
 import com.gengqiquan.flow.http.CallBack;
 
 import java.io.IOException;
 
 public interface Stream {
-    <T> void listen(CallBack callBack);
+    <T> void listen(@NonNull CallBack callBack);
 
     <T> T await() throws IOException;
 

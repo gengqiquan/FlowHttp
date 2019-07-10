@@ -88,7 +88,7 @@ public class Flow {
         synchronized (Flow.class) {
             mApp = application;
             baseUrl(builder.baseUrl);
-            
+
             if (builder.mService != null) {
                 mService = builder.mService;
             }
@@ -175,7 +175,7 @@ public class Flow {
             return this;
         }
 
-        public Builder Header(String key, String value) {
+        public Builder Header(@NonNull String key, String value) {
             this.headers.put(key, value);
             return this;
         }
@@ -206,28 +206,28 @@ public class Flow {
          * @date 2019-07-09 14:57
          */
 
-        public Builder bind(Activity activity) {
+        public Builder bind(@NonNull Activity activity) {
             lifecycleHolder = LifecycleProvider.get().get(activity);
             return this;
         }
 
-        public Builder bind(FragmentActivity activity) {
+        public Builder bind(@NonNull FragmentActivity activity) {
             lifecycleHolder = LifecycleProvider.get().get(activity);
             return this;
         }
 
-        public Builder bind(Fragment fragment) {
+        public Builder bind(@NonNull Fragment fragment) {
             lifecycleHolder = LifecycleProvider.get().get(fragment);
             return this;
         }
 
 
-        public Builder bind(android.app.Fragment fragment) {
+        public Builder bind(@NonNull android.app.Fragment fragment) {
             lifecycleHolder = LifecycleProvider.get().get(fragment);
             return this;
         }
 
-        public Builder lifeCircle(LifeEvent lifeEvent) {
+        public Builder lifeCircle(@NonNull LifeEvent lifeEvent) {
             this.lifeEvent = lifeEvent;
             return this;
         }
@@ -239,6 +239,21 @@ public class Flow {
 
         public Builder post() {
             this.method = HttpMethod.POST;
+            return this;
+        }
+
+        public Builder put() {
+            this.method = HttpMethod.PUT;
+            return this;
+        }
+
+        public Builder delete() {
+            this.method = HttpMethod.DELETE;
+            return this;
+        }
+
+        public Builder head() {
+            this.method = HttpMethod.HEAD;
             return this;
         }
 
@@ -267,7 +282,7 @@ public class Flow {
 
 
         @Override
-        public void listen(CallBack callBack) {
+        public void listen(@NonNull CallBack callBack) {
             builder().listen(callBack);
         }
 
@@ -277,7 +292,7 @@ public class Flow {
         }
 
         @Override
-        public <T, R> T transform(Transformer<? super T, ? super R> transformer) throws IOException {
+        public <T, R> T transform(@NonNull Transformer<? super T, ? super R> transformer) throws IOException {
             return (T) builder().transform(transformer);
         }
 
