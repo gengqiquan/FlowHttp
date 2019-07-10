@@ -12,10 +12,12 @@ import com.gengqiquan.flow.lifecycle.LifeEvent;
 import com.gengqiquan.flow.lifecycle.LifecycleListener;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.Response;
 
 /**
@@ -71,14 +73,6 @@ public class CallProxy implements Stream {
 
     }
 
-    Type getType(CallBack callBack) {
-        Type[] types = ((ParameterizedType) callBack.getClass().getGenericSuperclass()).getActualTypeArguments();
-        if (types.length < 1) {
-            return null;
-        }
-        return types[0];
-    }
-
     @Override
     public <T> void listen(@NonNull final CallBack callBack) {
         if (detach()) {
@@ -86,8 +80,7 @@ public class CallProxy implements Stream {
             return;
         }
         watch();
-        final Type type = getType(callBack);
-        System.out.println(type);
+        final Type type = Utils.getType(callBack.getClass(), CallBack.class)[0];
 
         callBack.start();
         call.enqueue(new okhttp3.Callback() {
@@ -144,11 +137,11 @@ public class CallProxy implements Stream {
     }
 
     @Override
-    public <T> T await() throws IOException {
+    public <T> T await(@NonNull Type cls) throws IOException {
         Response response = call.execute();
-        
+        System.out.print(cls);
         if (response.code() == 200) {
-            return (T) converter.convert(response.body(), null);
+            return (T) converter.convert(response.body(), cls);
         }
         throw new HttpException(response);
     }
@@ -157,7 +150,7 @@ public class CallProxy implements Stream {
     public <T, R> T transform(Transformer<? super T, ? super R> transformer) throws IOException {
         Response response = call.execute();
         if (response.code() == 200) {
-            R bean = (R) converter.convert(response.body(), null);
+            R bean = (R) converter.convert(response.body(), transformer.type());
             return (T) transformer.transform(bean);
         }
         throw new HttpException(response);

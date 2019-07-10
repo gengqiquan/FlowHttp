@@ -24,7 +24,9 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import rx.Observable;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -73,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
                 rx();
             }
         });
-
     }
 
     private void await() {
@@ -82,7 +83,8 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 try {
                     final Modell<List<Detail>> bean = Flow.with("getJoke?page=1&count=2&type=video")
-                            .await();
+                            .await(new TypeToken<Modell<List<Detail>>>() {
+                            }.type);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -99,37 +101,62 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public static Type type(final Class<?> raw, final Type... args) {
+        return new ParameterizedType() {
+            public Type getRawType() {
+                return raw;
+            }
+
+            public Type[] getActualTypeArguments() {
+                return args;
+            }
+
+            public Type getOwnerType() {
+                return null;
+            }
+        };
+    }
+
     void rx() {
-//    new Thread(new Runnable() {
-//        @Override
-//        public void run() {
-//            try {
-//                Flow.with("getJoke?page=1&count=2&type=video")
-//                        .transform(RxTransformFactory.create())
-//                        .subscribeOn(Schedulers.io())
-//                        .subscribe(new Subscriber<Modell<List<Detail>>>() {
-//                            @Override
-//                            public void onCompleted() {
-//
-//                            }
-//
-//                            @Override
-//                            public void onError(Throwable e) {
-//                                e.printStackTrace();
-//                            }
-//
-//                            @Override
-//                            public void onNext(final Modell<List<Detail>> m) {
-//
-//                            }
-//                        });
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//        }
-//    }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Flow.with("getJoke?page=1&count=2&type=video")
+                            .transform(new RxTransformFactory<Modell<List<Detail>>>(new TypeToken<Modell<List<Detail>>>() {
+                            }.type) {
+                            })
+                            .subscribeOn(Schedulers.io())
+                            .subscribe(new Subscriber<Modell<List<Detail>>>() {
+                                @Override
+                                public void onCompleted() {
+
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+                                    e.printStackTrace();
+                                }
+
+
+                                @Override
+                                public void onNext(final Modell<List<Detail>> m) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            ((TextView) findViewById(R.id.tv_text)).setText(m.getResult().get(0).toString());
+
+                                        }
+                                    });
+                                }
+                            });
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }).start();
     }
 
 }
