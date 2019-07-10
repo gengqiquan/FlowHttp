@@ -12,6 +12,8 @@ import com.gengqiquan.flow.lifecycle.LifeEvent;
 import com.gengqiquan.flow.lifecycle.LifecycleListener;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 import okhttp3.Call;
 import okhttp3.Response;
@@ -69,6 +71,14 @@ public class CallProxy implements Stream {
 
     }
 
+    Type getType(CallBack callBack) {
+        Type[] types = ((ParameterizedType) callBack.getClass().getGenericSuperclass()).getActualTypeArguments();
+        if (types.length < 1) {
+            return null;
+        }
+        return types[0];
+    }
+
     @Override
     public <T> void listen(@NonNull final CallBack callBack) {
         if (detach()) {
@@ -76,6 +86,9 @@ public class CallProxy implements Stream {
             return;
         }
         watch();
+        final Type type = getType(callBack);
+        System.out.println(type);
+
         callBack.start();
         call.enqueue(new okhttp3.Callback() {
             @Override
@@ -86,14 +99,14 @@ public class CallProxy implements Stream {
                 }
                 if (response.code() == 200) {
                     try {
-                        final T bean = converter.convert(response.body());
+                        final T bean = (T) converter.convert(response.body(), type);
                         scheduler.schedule(new Runnable() {
                             @Override
                             public void run() {
                                 callBack.success(bean);
                             }
                         });
-                    } catch (final IOException e) {
+                    } catch (final Exception e) {
                         scheduler.schedule(new Runnable() {
                             @Override
                             public void run() {
@@ -133,8 +146,9 @@ public class CallProxy implements Stream {
     @Override
     public <T> T await() throws IOException {
         Response response = call.execute();
+        
         if (response.code() == 200) {
-            return converter.convert(response.body());
+            return (T) converter.convert(response.body(), null);
         }
         throw new HttpException(response);
     }
@@ -143,7 +157,7 @@ public class CallProxy implements Stream {
     public <T, R> T transform(Transformer<? super T, ? super R> transformer) throws IOException {
         Response response = call.execute();
         if (response.code() == 200) {
-            R bean = converter.convert(response.body());
+            R bean = (R) converter.convert(response.body(), null);
             return (T) transformer.transform(bean);
         }
         throw new HttpException(response);

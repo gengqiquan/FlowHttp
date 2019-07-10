@@ -1,6 +1,7 @@
 package com.gengqiquan.flow.converter;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 import okhttp3.ResponseBody;
 
@@ -10,6 +11,6 @@ import okhttp3.ResponseBody;
  * @author gengqiquan
  * @date 2019-07-09 15:25
  */
-public interface Converter {
-    <T> T convert(ResponseBody body) throws IOException;
+public interface Converter<T> {
+     T convert(ResponseBody body, Type type) throws IOException;
 }

@@ -11,6 +11,8 @@ import com.gengqiquan.flow.Flow;
 import com.gengqiquan.flow.http.Result;
 import com.gengqiquan.flow.lifecycle.LifeEvent;
 
+import java.util.List;
+
 public class StopTestActivity extends AppCompatActivity {
 
     @Override
@@ -22,22 +24,22 @@ public class StopTestActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Flow.with("recommendPoetry")
+                Flow.with("getJoke?page=1&count=2&type=video")
                         .bind(StopTestActivity.this)
                         .lifeCircle(LifeEvent.STOP)
-                        .listen(new Result<Modell>() {
+                        .listen(new Result<Modell<List<Detail>>>() {
                             @Override
-                            public void success(Modell bean) {
-                                ((TextView) findViewById(R.id.tv_btn)).setText(bean.toString());
+                            public void success(Modell<List<Detail>> bean) {
+                                ((TextView) findViewById(R.id.tv_btn)).setText(bean.getResult().get(0).toString());
                             }
                         });
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        startActivity(new Intent(StopTestActivity.this, DestroyTestActivity.class));
-
-                    }
-                }, 1000);
+//                new Handler().postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        startActivity(new Intent(StopTestActivity.this, DestroyTestActivity.class));
+//
+//                    }
+//                }, 1000);
             }
         });
     }

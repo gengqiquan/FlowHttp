@@ -1,24 +1,24 @@
 package com.gengqiquan.flowhttp;
 
-public class Modell {
+import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
+public class Modell<T> {
+
 
     /**
-     * result : SUCCESS
      * code : 200
-     * data : {"id":"526307800","name":"123我爱你","singer":"新乐尘符","pic":"http://p1.music.126.net/_LNk7rEEBSdAcnyHL8zi6Q==/109951163093399018.jpg?param=400y400","lrc":"https://api.bzqll.com/music/netease/lrc?id=526307800&key=579621905","url":"https://api.bzqll.com/music/netease/url?id=526307800&key=579621905","time":199}
+     * message : 成功!
+     * result : [{"sid":"29641934","text":"天呐，这变化也太大了吧\u2026","type":"video","thumbnail":"http://wimg.spriteapp.cn/picture/2019/0709/59ead0dea21511e9b797842b2b4c75ab_wpd.jpg","video":"http://wvideo.spriteapp.cn/video/2019/0709/59ead0dea21511e9b797842b2b4c75ab_wpd.mp4","images":null,"up":"80","down":"8","forward":"0","comment":"5","uid":"20746665","name":"樱花丶葬礼","header":"http://wimg.spriteapp.cn/profile/large/2019/03/26/5c99f6da60550_mini.jpg","top_comments_content":null,"top_comments_voiceuri":null,"top_comments_uid":null,"top_comments_name":null,"top_comments_header":null,"passtime":"2019-07-10 02:50:02"},{"sid":"29640936","text":"喜欢给人挖坑的那帮家伙原来都是这种态啊","type":"video","thumbnail":"http://wimg.spriteapp.cn/picture/2019/0708/5d2359085f68a__b.jpg","video":"http://wvideo.spriteapp.cn/video/2019/0708/5d23590882fb3_wpd.mp4","images":null,"up":"85","down":"6","forward":"1","comment":"10","uid":"11996791","name":"Pescado","header":"http://wimg.spriteapp.cn/profile/large/2019/02/10/5c6015142adc7_mini.jpg","top_comments_content":null,"top_comments_voiceuri":null,"top_comments_uid":null,"top_comments_name":null,"top_comments_header":null,"passtime":"2019-07-10 02:10:01"}]
      */
 
-    private String result;
+    @SerializedName("code")
     private int code;
-    private String msg;
-
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
-    }
+    @SerializedName("message")
+    private String message;
+    @SerializedName("result")
+    private T result;
 
     public int getCode() {
         return code;
@@ -28,20 +28,28 @@ public class Modell {
         this.code = code;
     }
 
-    public String getMsg() {
-        return msg;
+    public String getMessage() {
+        return message;
     }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public T getResult() {
+        return result;
+    }
+
+    public void setResult(T result) {
+        this.result = result;
     }
 
     @Override
     public String toString() {
         return "Modell{" +
-                "result='" + result + '\'' +
-                ", code=" + code +
-                ", msg='" + msg + '\'' +
+                "code=" + code +
+                ", message='" + message + '\'' +
+                ", result=" + result.toString() +
                 '}';
     }
 }

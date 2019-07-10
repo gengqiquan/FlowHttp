@@ -1,6 +1,7 @@
 package com.gengqiquan.flow.converter;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 import okhttp3.ResponseBody;
 
@@ -15,7 +16,7 @@ public class ConverterFactory {
     public static Converter StringConverter() {
         return new Converter() {
             @Override
-            public String convert(ResponseBody body) throws IOException {
+            public String convert(ResponseBody body, Type type) throws IOException {
                 try {
                     return body.string();
                 } finally {
