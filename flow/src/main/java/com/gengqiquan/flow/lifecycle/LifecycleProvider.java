@@ -18,40 +18,40 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 生命周期管理类
+ * 生命周期调度提供类
  * Reference Glide
  *
  * @author gengqiquan
  * @date 2019-07-09 17:57
  */
-public class RequestManager implements Handler.Callback {
+public class LifecycleProvider implements Handler.Callback {
     static final String FRAGMENT_TAG = "com.gqq.flow.manager";
 
     /**
-     * The singleton instance of RequestManagerRetriever.
+     * The singleton instance of LifecycleRetriever.
      */
-    private static final RequestManager INSTANCE = new RequestManager();
+    private static final LifecycleProvider INSTANCE = new LifecycleProvider();
 
     private static final int ID_REMOVE_FRAGMENT_MANAGER = 1;
     private static final int ID_REMOVE_SUPPORT_FRAGMENT_MANAGER = 2;
-    private static final String TAG = "RequestManager";
+    private static final String TAG = "Lifecycle";
     Handler handler;
 
-    public RequestManager() {
+    public LifecycleProvider() {
         handler = new Handler(Looper.getMainLooper(), this /* Callback */);
     }
 
     /**
-     * Retrieves and returns the RequestManagerRetriever singleton.
+     * Retrieves and returns the LifecycleRetriever singleton.
      */
-    public static RequestManager get() {
+    public static LifecycleProvider get() {
         return INSTANCE;
     }
 
     /**
      * Application can not listen
      */
-    private ActivityFragmentLifecycle get(Context context) {
+    public LifecycleHolder get(Context context) {
         if (context == null) {
             throw new IllegalArgumentException("You cannot start a load on a null Context");
         } else if (!isOnMainThread() && !(context instanceof Application)) {
@@ -67,9 +67,9 @@ public class RequestManager implements Handler.Callback {
         return getApplicationLifecycle(context);
     }
 
-    private volatile ActivityFragmentLifecycle applicationLifecycle;
+    private volatile LifecycleHolder applicationLifecycle;
 
-    private ActivityFragmentLifecycle getApplicationLifecycle(Context context) {
+    private LifecycleHolder getApplicationLifecycle(Context context) {
         // Either an application context or we're on a background thread.
         if (applicationLifecycle == null) {
             synchronized (this) {
@@ -77,14 +77,14 @@ public class RequestManager implements Handler.Callback {
                     // Normally pause/resume is taken care of by the fragment we add to the fragment or activity.
                     // However, in this case since the manager attached to the application will not receive lifecycle
                     // events,
-                    applicationLifecycle = new ActivityFragmentLifecycle();
+                    applicationLifecycle = new LifecycleHolder(true);
                 }
             }
         }
         return applicationLifecycle;
     }
 
-    public ActivityFragmentLifecycle get(FragmentActivity activity) {
+    public LifecycleHolder get(FragmentActivity activity) {
         if (!isOnMainThread()) {
             return get(activity.getApplicationContext());
         } else {
@@ -94,7 +94,7 @@ public class RequestManager implements Handler.Callback {
         }
     }
 
-    public ActivityFragmentLifecycle get(Activity activity) {
+    public LifecycleHolder get(Activity activity) {
         if (!isOnMainThread()) {
             return get(activity.getApplicationContext());
         } else {
@@ -104,7 +104,7 @@ public class RequestManager implements Handler.Callback {
         }
     }
 
-    public ActivityFragmentLifecycle get(Fragment fragment) {
+    public LifecycleHolder get(Fragment fragment) {
         if (fragment.getActivity() == null) {
             throw new IllegalArgumentException("You cannot start a load on a fragment before it is attached");
         }
@@ -117,7 +117,7 @@ public class RequestManager implements Handler.Callback {
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public ActivityFragmentLifecycle get(android.app.Fragment fragment) {
+    public LifecycleHolder get(android.app.Fragment fragment) {
         if (fragment.getActivity() == null) {
             throw new IllegalArgumentException("You cannot start a load on a fragment before it is attached");
         }
@@ -130,25 +130,25 @@ public class RequestManager implements Handler.Callback {
     }
 
 
-    ActivityFragmentLifecycle fragmentGet(Context context, android.app.FragmentManager fm) {
-        RequestManagerFragment current = getRequestManagerFragment(fm);
-        return current.getFragmentLifecycle();
+    LifecycleHolder fragmentGet(Context context, android.app.FragmentManager fm) {
+        LifecycleFragment current = getLifecycleFragment(fm);
+        return current.getLifecycleHolder();
 
     }
 
-    ActivityFragmentLifecycle supportFragmentGet(Context context, FragmentManager fm) {
-        SupportRequestManagerFragment current = getSupportRequestManagerFragment(fm);
-        return current.getFragmentLifecycle();
+    LifecycleHolder supportFragmentGet(Context context, FragmentManager fm) {
+        LifecycleSupportFragment current = getLifecycleSupportFragment(fm);
+        return current.getLifecycleHolder();
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    RequestManagerFragment getRequestManagerFragment(final android.app.FragmentManager fm) {
-        RequestManagerFragment current = (RequestManagerFragment) fm.findFragmentByTag(FRAGMENT_TAG);
+    LifecycleFragment getLifecycleFragment(final android.app.FragmentManager fm) {
+        LifecycleFragment current = (LifecycleFragment) fm.findFragmentByTag(FRAGMENT_TAG);
         if (current == null) {
-            current = pendingRequestManagerFragments.get(fm);
+            current = pendingLifecycleFragments.get(fm);
             if (current == null) {
-                current = new RequestManagerFragment();
-                pendingRequestManagerFragments.put(fm, current);
+                current = new LifecycleFragment();
+                pendingLifecycleFragments.put(fm, current);
                 fm.beginTransaction().add(current, FRAGMENT_TAG).commitAllowingStateLoss();
                 handler.obtainMessage(ID_REMOVE_FRAGMENT_MANAGER, fm).sendToTarget();
             }
@@ -156,13 +156,13 @@ public class RequestManager implements Handler.Callback {
         return current;
     }
 
-    SupportRequestManagerFragment getSupportRequestManagerFragment(final FragmentManager fm) {
-        SupportRequestManagerFragment current = (SupportRequestManagerFragment) fm.findFragmentByTag(FRAGMENT_TAG);
+    LifecycleSupportFragment getLifecycleSupportFragment(final FragmentManager fm) {
+        LifecycleSupportFragment current = (LifecycleSupportFragment) fm.findFragmentByTag(FRAGMENT_TAG);
         if (current == null) {
-            current = pendingSupportRequestManagerFragments.get(fm);
+            current = pendingLifecycleSupportFragments.get(fm);
             if (current == null) {
-                current = new SupportRequestManagerFragment();
-                pendingSupportRequestManagerFragments.put(fm, current);
+                current = new LifecycleSupportFragment();
+                pendingLifecycleSupportFragments.put(fm, current);
                 fm.beginTransaction().add(current, FRAGMENT_TAG).commitAllowingStateLoss();
                 handler.obtainMessage(ID_REMOVE_SUPPORT_FRAGMENT_MANAGER, fm).sendToTarget();
             }
@@ -170,12 +170,12 @@ public class RequestManager implements Handler.Callback {
         return current;
     }
 
-    final Map<android.app.FragmentManager, RequestManagerFragment> pendingRequestManagerFragments =
+    final Map<android.app.FragmentManager, LifecycleFragment> pendingLifecycleFragments =
             new HashMap<>();
     /**
-     * Pending adds for SupportRequestManagerFragments.
+     * Pending adds for SupportLifecycleFragments.
      */
-    final Map<FragmentManager, SupportRequestManagerFragment> pendingSupportRequestManagerFragments =
+    final Map<FragmentManager, LifecycleSupportFragment> pendingLifecycleSupportFragments =
             new HashMap<>();
 
     @Override
@@ -187,12 +187,12 @@ public class RequestManager implements Handler.Callback {
             case ID_REMOVE_FRAGMENT_MANAGER:
                 android.app.FragmentManager fm = (android.app.FragmentManager) message.obj;
                 key = fm;
-                removed = pendingRequestManagerFragments.remove(fm);
+                removed = pendingLifecycleFragments.remove(fm);
                 break;
             case ID_REMOVE_SUPPORT_FRAGMENT_MANAGER:
                 FragmentManager supportFm = (FragmentManager) message.obj;
                 key = supportFm;
-                removed = pendingSupportRequestManagerFragments.remove(supportFm);
+                removed = pendingLifecycleSupportFragments.remove(supportFm);
                 break;
             default:
                 handled = false;

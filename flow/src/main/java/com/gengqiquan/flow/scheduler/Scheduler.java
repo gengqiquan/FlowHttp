@@ -1,4 +1,4 @@
-package com.gengqiquan.flow.interfaces;
+package com.gengqiquan.flow.scheduler;
 
 public interface Scheduler {
     void schedule(Runnable r);

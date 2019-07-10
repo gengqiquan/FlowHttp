@@ -1,13 +1,11 @@
-package com.gengqiquan.flow;
+package com.gengqiquan.flow.scheduler;
 
 import android.os.Handler;
 import android.os.Looper;
 
-import com.gengqiquan.flow.interfaces.Scheduler;
-
 import java.util.concurrent.atomic.AtomicReference;
 
- class AndroidSchedulers {
+public class AndroidSchedulers {
     /**
      * A {@link Scheduler} which executes actions on the Android UI thread.
      */

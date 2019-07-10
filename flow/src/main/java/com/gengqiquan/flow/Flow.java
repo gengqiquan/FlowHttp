@@ -7,14 +7,19 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 
-import com.gengqiquan.flow.interfaces.CallBack;
-import com.gengqiquan.flow.interfaces.Scheduler;
+import com.gengqiquan.flow.converter.Converter;
+import com.gengqiquan.flow.converter.ConverterFactory;
+import com.gengqiquan.flow.http.CallProxy;
+import com.gengqiquan.flow.http.HttpMethod;
+import com.gengqiquan.flow.http.RequestBuilder;
+import com.gengqiquan.flow.http.CallBack;
+import com.gengqiquan.flow.scheduler.Scheduler;
 import com.gengqiquan.flow.interfaces.Stream;
 import com.gengqiquan.flow.interfaces.Transformer;
-import com.gengqiquan.flow.lifecycle.ActivityFragmentLifecycle;
+import com.gengqiquan.flow.lifecycle.LifecycleHolder;
 import com.gengqiquan.flow.lifecycle.LifeEvent;
-import com.gengqiquan.flow.lifecycle.LifecycleListener;
-import com.gengqiquan.flow.lifecycle.RequestManager;
+import com.gengqiquan.flow.lifecycle.LifecycleProvider;
+import com.gengqiquan.flow.scheduler.AndroidSchedulers;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -38,12 +43,12 @@ import okhttp3.Request;
 public class Flow {
     private static final String TAG = "FlowHttp";
     private static volatile okhttp3.Call.Factory mService;
-    private static volatile HttpUrl mBaseUrl;
-    private volatile static Converter mConverter;
-    private volatile static MediaType mContentType;
-    private volatile static Application mApp;
-    final private static String GET = "GET";
-    final private static String POST = "POST";
+    private static HttpUrl mBaseUrl;
+    private static Converter mConverter = ConverterFactory.StringConverter();
+    ;
+    private static MediaType mContentType;
+    private static Application mApp;
+    private static HttpMethod mDefaultMethod = HttpMethod.GET;
 
     private static okhttp3.Call.Factory getService() {
         if (mService == null) {
@@ -80,11 +85,22 @@ public class Flow {
     }
 
     public static void init(@NonNull Application application, @NonNull ConfigBuilder builder) {
-        mApp = application;
-        baseUrl(builder.baseUrl);
-        mService = builder.mService;
-        mConverter = builder.converter;
-        mContentType = builder.contentType;
+        synchronized (Flow.class) {
+            mApp = application;
+            baseUrl(builder.baseUrl);
+            
+            if (builder.mService != null) {
+                mService = builder.mService;
+            }
+            if (builder.converter != null) {
+                mConverter = builder.converter;
+            }
+            mContentType = builder.contentType;
+
+            if (builder.defaultMethod != null) {
+                mDefaultMethod = builder.defaultMethod;
+            }
+        }
     }
 
     public static class ConfigBuilder {
@@ -92,6 +108,7 @@ public class Flow {
         String baseUrl;
         Converter converter;
         MediaType contentType;
+        HttpMethod defaultMethod;
 
         public ConfigBuilder(@NonNull String baseUrl) {
             this.baseUrl = baseUrl;
@@ -107,6 +124,11 @@ public class Flow {
             return this;
         }
 
+        public ConfigBuilder defaultMethod(@NonNull HttpMethod defaultMethod) {
+            this.defaultMethod = defaultMethod;
+            return this;
+        }
+
         public ConfigBuilder contentType(@NonNull MediaType contentType) {
             this.contentType = contentType;
             return this;
@@ -118,7 +140,7 @@ public class Flow {
     }
 
     public static class Builder implements Stream {
-        String method = GET;
+        HttpMethod method = mDefaultMethod;
         MediaType contentType;
         String url;
         Scheduler scheduler;
@@ -174,7 +196,7 @@ public class Flow {
             return this;
         }
 
-        ActivityFragmentLifecycle lifecycle;
+        LifecycleHolder lifecycleHolder;
         LifeEvent lifeEvent = LifeEvent.DESTROY;
 
         /**
@@ -185,52 +207,43 @@ public class Flow {
          */
 
         public Builder bind(Activity activity) {
-            lifecycle = RequestManager.get().get(activity);
-            return this;
-        }
-
-        public Builder bind(Activity activity, LifeEvent lifeEvent) {
-            this.lifeEvent = lifeEvent;
-            lifecycle = RequestManager.get().get(activity);
+            lifecycleHolder = LifecycleProvider.get().get(activity);
             return this;
         }
 
         public Builder bind(FragmentActivity activity) {
-            lifecycle = RequestManager.get().get(activity);
-            return this;
-        }
-
-        public Builder bind(FragmentActivity activity, LifeEvent lifeEvent) {
-            this.lifeEvent = lifeEvent;
-            lifecycle = RequestManager.get().get(activity);
+            lifecycleHolder = LifecycleProvider.get().get(activity);
             return this;
         }
 
         public Builder bind(Fragment fragment) {
-            lifecycle = RequestManager.get().get(fragment);
+            lifecycleHolder = LifecycleProvider.get().get(fragment);
             return this;
         }
 
-        public Builder bind(Fragment fragment, LifeEvent lifeEvent) {
-            this.lifeEvent = lifeEvent;
-            lifecycle = RequestManager.get().get(fragment);
-            return this;
-        }
 
         public Builder bind(android.app.Fragment fragment) {
-            lifecycle = RequestManager.get().get(fragment);
+            lifecycleHolder = LifecycleProvider.get().get(fragment);
             return this;
         }
 
-        public Builder bind(android.app.Fragment fragment, LifeEvent lifeEvent) {
+        public Builder lifeCircle(LifeEvent lifeEvent) {
             this.lifeEvent = lifeEvent;
-            lifecycle = RequestManager.get().get(fragment);
             return this;
         }
 
+        public Builder get() {
+            this.method = HttpMethod.GET;
+            return this;
+        }
+
+        public Builder post() {
+            this.method = HttpMethod.POST;
+            return this;
+        }
 
         private Stream builder() {
-            RequestBuilder builder = new RequestBuilder(this.method, Flow.mBaseUrl, this.url, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
+            RequestBuilder builder = new RequestBuilder(this.method.getValue(), Flow.mBaseUrl, this.url, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
             if (!params.isEmpty()) {
                 for (Map.Entry<String, String> entry : this.headers.entrySet()) {
                     String key = entry.getKey();
@@ -246,39 +259,12 @@ public class Flow {
             if (converter == null) {
                 converter = Flow.mConverter;
             }
-            if (converter == null) {
-                converter = Converter.Default();
+            if (lifecycleHolder != null) {
+                LifecycleProvider.get().get(mApp);
             }
-            if (lifecycle != null) {
-                lifecycle.addListener(new LifecycleListener() {
-                    @Override
-                    public void onStop() {
-                        if (lifeEvent == LifeEvent.STOP && !call.isCanceled() && !call.isExecuted()) {
-                            call.cancel();
-                        }
-                    }
-
-                    @Override
-                    public void onDestroy() {
-                        if (lifeEvent == LifeEvent.DESTROY && !call.isCanceled() && !call.isExecuted()) {
-                            call.cancel();
-                        }
-                    }
-                });
-            }
-            return new CallProxy(call, converter, scheduler);
+            return new CallProxy(call, converter, scheduler, lifecycleHolder, lifeEvent);
         }
 
-
-        public Builder get() {
-            this.method = GET;
-            return this;
-        }
-
-        public Builder post() {
-            this.method = POST;
-            return this;
-        }
 
         @Override
         public void listen(CallBack callBack) {
@@ -296,11 +282,11 @@ public class Flow {
         }
 
         private boolean hasBody() {
-            return POST.equals(method);
+            return HttpMethod.POST == method || HttpMethod.PUT == method;
         }
 
         private boolean isFormEncoded() {
-            return POST.equals(method);
+            return HttpMethod.POST == method || HttpMethod.PUT == method;
         }
 
         private boolean isMultipart() {

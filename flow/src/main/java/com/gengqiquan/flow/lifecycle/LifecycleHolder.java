@@ -8,13 +8,25 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 
-public class ActivityFragmentLifecycle implements LifecycleListener {
-    private final Set<LifecycleListener> lifecycleListeners =
-            Collections.newSetFromMap(new WeakHashMap<LifecycleListener, Boolean>());
-    private boolean isDestroyed;
-    private boolean isStop;
+public class LifecycleHolder implements LifecycleListener {
+    private Set<LifecycleListener> lifecycleListeners;
+    public volatile boolean isDestroyed;
+    public volatile boolean isStop;
+    private boolean empty = false;
+    public LifecycleHolder(boolean empty) {
+        this.empty = empty;
+        if (empty) {
+            return;
+        }
+        lifecycleListeners =
+                Collections.newSetFromMap(new WeakHashMap<LifecycleListener, Boolean>());
+
+    }
 
     public void addListener(LifecycleListener listener) {
+        if (empty) {
+            return;
+        }
         lifecycleListeners.add(listener);
 
         if (isDestroyed) {
@@ -24,8 +36,16 @@ public class ActivityFragmentLifecycle implements LifecycleListener {
         }
     }
 
+    public void onStart() {
+        isDestroyed = false;
+        isStop = false;
+    }
+
     @Override
     public void onStop() {
+        if (empty) {
+            return;
+        }
         isStop = true;
         for (LifecycleListener lifecycleListener : getSnapshot(lifecycleListeners)) {
             lifecycleListener.onStop();
@@ -34,6 +54,9 @@ public class ActivityFragmentLifecycle implements LifecycleListener {
 
     @Override
     public void onDestroy() {
+        if (empty) {
+            return;
+        }
         isDestroyed = true;
         for (LifecycleListener lifecycleListener : getSnapshot(lifecycleListeners)) {
             lifecycleListener.onDestroy();

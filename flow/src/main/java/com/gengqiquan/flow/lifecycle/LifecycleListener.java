@@ -4,8 +4,6 @@ package com.gengqiquan.flow.lifecycle;
  * An interface for listener to {@link android.app.Fragment} and {@link android.app.Activity} lifecycle events.
  */
 public interface LifecycleListener {
-    boolean isFinished = false;
-
     /**
      * Callback for when {@link android.app.Fragment#onStop()}} or {@link android.app.Activity#onStop()}} is called.
      */

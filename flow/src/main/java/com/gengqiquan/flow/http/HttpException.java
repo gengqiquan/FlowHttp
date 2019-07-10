@@ -1,6 +1,6 @@
 
 
-package com.gengqiquan.flow;
+package com.gengqiquan.flow.http;
 
 
 import java.io.IOException;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gengqiquan.flow;
+package com.gengqiquan.flow.http;
 
 import android.support.annotation.Nullable;
 
@@ -35,7 +35,7 @@ import okio.BufferedSink;
  * @author gengqiquan
  * @date 2019-07-09 15:28
  */
-final class RequestBuilder {
+public final class RequestBuilder {
     private static final char[] HEX_DIGITS =
             {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     private static final String PATH_SEGMENT_ALWAYS_ENCODE_SET = " \"<>^`{}|\\?#";
@@ -60,7 +60,7 @@ final class RequestBuilder {
     private @Nullable
     RequestBody body;
 
-    RequestBuilder(String method, HttpUrl baseUrl, @Nullable String relativeUrl,
+    public RequestBuilder(String method, HttpUrl baseUrl, @Nullable String relativeUrl,
                    @Nullable Headers headers, @Nullable MediaType contentType, boolean hasBody,
                    boolean isFormEncoded, boolean isMultipart) {
         this.method = method;
@@ -157,7 +157,7 @@ final class RequestBuilder {
         }
     }
 
-    void addQueryParam(String name, @Nullable String value, boolean encoded) {
+  public   void addQueryParam(String name, @Nullable String value, boolean encoded) {
         if (relativeUrl != null) {
             // Do a one-time combination of the built relative URL and the base URL.
             urlBuilder = baseUrl.newBuilder(relativeUrl);
@@ -203,7 +203,8 @@ final class RequestBuilder {
         this.body = body;
     }
 
-    Request build() {
+
+   public Request build() {
         HttpUrl url;
         HttpUrl.Builder urlBuilder = this.urlBuilder;
         if (urlBuilder != null) {

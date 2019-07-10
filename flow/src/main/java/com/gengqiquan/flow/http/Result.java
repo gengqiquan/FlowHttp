@@ -1,6 +1,5 @@
-package com.gengqiquan.flow;
+package com.gengqiquan.flow.http;
 
-import com.gengqiquan.flow.interfaces.CallBack;
 import com.gengqiquan.flow.interfaces.Func0;
 import com.gengqiquan.flow.interfaces.Func1;
 

@@ -1,5 +1,7 @@
 package com.gengqiquan.flow.interfaces;
 
+import com.gengqiquan.flow.http.CallBack;
+
 import java.io.IOException;
 
 public interface Stream {
