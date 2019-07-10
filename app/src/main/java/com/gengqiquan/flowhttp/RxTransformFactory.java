@@ -1,7 +1,9 @@
 package com.gengqiquan.flowhttp;
 
+import com.gengqiquan.flow.http.TypeToken;
 import com.gengqiquan.flow.interfaces.Transformer;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import rx.Observable;
@@ -21,8 +23,10 @@ public class RxTransformFactory<T> implements Transformer<Observable<T>, T> {
         });
     }
 
-    public RxTransformFactory(Type type) {
-        this.type = type;
+    public RxTransformFactory(TypeToken typeToken) {
+        Type superclass = typeToken.getClass().getGenericSuperclass();
+        ParameterizedType parameterized = (ParameterizedType) superclass;
+        this.type = parameterized.getActualTypeArguments()[0];
     }
 
     Type type;
@@ -32,7 +36,7 @@ public class RxTransformFactory<T> implements Transformer<Observable<T>, T> {
         return type;
     }
 
-    public static <T> Transformer<Observable<T>, T> create(TypeToken typeToken) {
-        return new RxTransformFactory(typeToken.getType());
+    public static Transformer<Observable<Modell>, Modell> create() {
+        return new RxTransformFactory(new TypeToken<Modell>());
     }
 }

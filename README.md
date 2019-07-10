@@ -1,7 +1,7 @@
 
 * 基于OKhttp的网络封装库
 * 简单，高可配置，易使用
-* 直接返回Java对象
+* 直接返回Java对象,对象支持泛型
 * 异步请求直接绑定activity or fragment生命周期自动取消请求
 
 ### 示例
@@ -110,7 +110,7 @@ Flow.init(getApplication(), new Flow.ConfigBuilder("https://api.apiopen.top/")
 ###Gradle
 
 ```
-compile 'com.gengqiquan:flow:0.0.1'
+compile 'com.gengqiquan:flow:0.0.2'
 ```
 
 ### Future

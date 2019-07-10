@@ -13,6 +13,7 @@ import com.gengqiquan.flow.http.CallProxy;
 import com.gengqiquan.flow.http.HttpMethod;
 import com.gengqiquan.flow.http.RequestBuilder;
 import com.gengqiquan.flow.http.CallBack;
+import com.gengqiquan.flow.http.TypeToken;
 import com.gengqiquan.flow.scheduler.Scheduler;
 import com.gengqiquan.flow.interfaces.Stream;
 import com.gengqiquan.flow.interfaces.Transformer;
@@ -290,6 +291,15 @@ public class Flow {
         @Override
         public <T> T await(Type cls) throws IOException {
             return builder().await(cls);
+        }
+
+        public <T> T await() throws IOException {
+            return builder().await(new TypeToken<String>() {
+            }.getType());
+        }
+
+        public <T> T await(TypeToken typeToken) throws IOException {
+            return builder().await(typeToken.getType());
         }
 
         @Override

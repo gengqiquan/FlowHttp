@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.gengqiquan.flow.Flow;
 import com.gengqiquan.flow.converter.Converter;
 import com.gengqiquan.flow.http.Result;
+import com.gengqiquan.flow.http.TypeToken;
 import com.gengqiquan.flow.lifecycle.LifeEvent;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -40,17 +41,17 @@ public class MainActivity extends AppCompatActivity {
                 .converter(GsonConverterFactory.create())
                 .client(new OkHttpClient
                         .Builder()
-//                        .addNetworkInterceptor(new Interceptor() {
-//                            @Override
-//                            public Response intercept(Chain chain) throws IOException {
-//                                try {
-//                                    Thread.sleep(3000);
-//                                } catch (InterruptedException e) {
-//                                    e.printStackTrace();
-//                                }
-//                                return chain.proceed(chain.request());
-//                            }
-//                        })
+                        .addNetworkInterceptor(new Interceptor() {
+                            @Override
+                            public Response intercept(Chain chain) throws IOException {
+                                try {
+                                    Thread.sleep(3000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                return chain.proceed(chain.request());
+                            }
+                        })
                         .connectTimeout(10, TimeUnit.SECONDS)
                         .readTimeout(15, TimeUnit.SECONDS)
                         .writeTimeout(15, TimeUnit.SECONDS)
@@ -82,13 +83,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    final Modell<List<Detail>> bean = Flow.with("getJoke?page=1&count=2&type=video")
-                            .await(new TypeToken<Modell<List<Detail>>>() {
-                            }.type);
+                    final Modell bean = Flow.with("getJoke?page=1&count=2&type=video")
+                            .await(Modell.class);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            ((TextView) findViewById(R.id.tv_text)).setText(bean.getResult().get(0).toString());
+                            ((TextView) findViewById(R.id.tv_text)).setText(bean.getResult().toString());
 
                         }
                     });
@@ -101,22 +101,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static Type type(final Class<?> raw, final Type... args) {
-        return new ParameterizedType() {
-            public Type getRawType() {
-                return raw;
-            }
-
-            public Type[] getActualTypeArguments() {
-                return args;
-            }
-
-            public Type getOwnerType() {
-                return null;
-            }
-        };
-    }
-
     void rx() {
         new Thread(new Runnable() {
             @Override
@@ -124,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     Flow.with("getJoke?page=1&count=2&type=video")
                             .transform(new RxTransformFactory<Modell<List<Detail>>>(new TypeToken<Modell<List<Detail>>>() {
-                            }.type) {
+                            }) {
                             })
                             .subscribeOn(Schedulers.io())
                             .subscribe(new Subscriber<Modell<List<Detail>>>() {

@@ -32,11 +32,14 @@ import java.util.NoSuchElementException;
 import okhttp3.ResponseBody;
 import okio.Buffer;
 
-final class Utils {
+public class TypeToken<T> {
     static final Type[] EMPTY_TYPE_ARRAY = new Type[0];
 
-    private Utils() {
-        // No instances.
+
+    public Type getType() {
+        Type superclass = getClass().getGenericSuperclass();
+        ParameterizedType parameterized = (ParameterizedType) superclass;
+        return parameterized.getActualTypeArguments()[0];
     }
 
     static Type[] getType(Class cls, Type pp) {
@@ -423,7 +426,7 @@ final class Utils {
 
         @Override
         public boolean equals(Object other) {
-            return other instanceof ParameterizedType && Utils.equals(this, (ParameterizedType) other);
+            return other instanceof ParameterizedType && TypeToken.equals(this, (ParameterizedType) other);
         }
 
         @Override
@@ -459,7 +462,7 @@ final class Utils {
         @Override
         public boolean equals(Object o) {
             return o instanceof GenericArrayType
-                    && Utils.equals(this, (GenericArrayType) o);
+                    && TypeToken.equals(this, (GenericArrayType) o);
         }
 
         @Override
@@ -512,7 +515,7 @@ final class Utils {
 
         @Override
         public boolean equals(Object other) {
-            return other instanceof WildcardType && Utils.equals(this, (WildcardType) other);
+            return other instanceof WildcardType && TypeToken.equals(this, (WildcardType) other);
         }
 
         @Override

@@ -1,6 +1,8 @@
 package com.gengqiquan.flowhttp;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
@@ -31,13 +33,13 @@ public class StopTestActivity extends AppCompatActivity {
                                 ((TextView) findViewById(R.id.tv_btn)).setText(bean.getResult().get(0).toString());
                             }
                         });
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        startActivity(new Intent(StopTestActivity.this, DestroyTestActivity.class));
-//
-//                    }
-//                }, 1000);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        startActivity(new Intent(StopTestActivity.this, DestroyTestActivity.class));
+
+                    }
+                }, 1000);
             }
         });
     }

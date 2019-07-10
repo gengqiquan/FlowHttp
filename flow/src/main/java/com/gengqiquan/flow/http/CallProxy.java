@@ -12,12 +12,9 @@ import com.gengqiquan.flow.lifecycle.LifeEvent;
 import com.gengqiquan.flow.lifecycle.LifecycleListener;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
 
 /**
@@ -80,7 +77,7 @@ public class CallProxy implements Stream {
             return;
         }
         watch();
-        final Type type = Utils.getType(callBack.getClass(), CallBack.class)[0];
+        final Type type = TypeToken.getType(callBack.getClass(), CallBack.class)[0];
 
         callBack.start();
         call.enqueue(new okhttp3.Callback() {
