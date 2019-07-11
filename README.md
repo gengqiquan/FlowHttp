@@ -10,36 +10,14 @@
 
 ```
 Flow.init(getApplication(), new Flow.ConfigBuilder("https://api.apiopen.top/")
-                .converter( new Converter() {
-                                   Gson gson = new Gson();
-
-                                   @Override
-                                   public Modell convert(ResponseBody value) throws IOException {
-                                       String json = "";
-                                       try {
-                                           json = value.string();
-                                       } finally {
-                                           value.close();
-
-                                           Modell m = null;
-                                           try {
-                                               m = gson.fromJson(json, Modell.class);
-                                           } catch (JsonSyntaxException e) {
-                                               m = new Modell();
-                                           } finally {
-                                               return m;
-                                           }
-                                       }
-
-                                   }
-                               })
+               .converter(GsonConverterFactory.create())
               );
 ```
 
 * 同步
 
 ```
- Modell model=Flow.with("recommendPoetry").await();
+ Modell model=Flow.with("recommendPoetry").await(Modell.class);
 
 ```
 
