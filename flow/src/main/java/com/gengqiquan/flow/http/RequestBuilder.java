@@ -18,6 +18,8 @@ package com.gengqiquan.flow.http;
 import android.support.annotation.Nullable;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import okhttp3.FormBody;
 import okhttp3.Headers;
@@ -203,6 +205,14 @@ public final class RequestBuilder {
         this.body = body;
     }
 
+    public boolean isNumeric(String str) {
+        Pattern pattern = Pattern.compile("-?[0-9]+.?[0-9]+");
+        Matcher isNum = pattern.matcher(str);
+        if (!isNum.matches()) {
+            return false;
+        }
+        return true;
+    }
 
     public Request build() {
         HttpUrl url;

@@ -296,21 +296,26 @@ public class Flow {
                     builder.addQueryParam(key, value, false);
                 }
             } else if (method == HttpMethod.POST) {
-                if (!params.isEmpty()) {
-                    for (Map.Entry<String, String> entry : this.params.entrySet()) {
-                        String key = entry.getKey();
-                        String value = entry.getValue();
-                        builder.addFormField(key, value, false);
-                    }
-                }
                 if (asJson) {
                     if (json == null) {
                         if (!params.isEmpty()) {
                             json = "{";
                             for (Map.Entry<String, String> entry : this.params.entrySet()) {
                                 String key = entry.getKey();
+                                json = json + "\"" + key + "\":";
+
                                 String value = entry.getValue();
-                                json = json + "\"" + key + "\",\"" + value + "\",";
+                                if (value == null) {
+                                    json = json + "null,";
+                                } else if (value.equalsIgnoreCase("true")) {
+                                    json = json + "true,";
+                                } else if (value.equalsIgnoreCase("false")) {
+                                    json = json + "false,";
+                                } else if (builder.isNumeric(value)) {
+                                    json = json + value + ",";
+                                } else {
+                                    json = json + "\"" + value + "\",";
+                                }
                             }
                             json = json.substring(0, json.length() - 1);
                             json = json + "}";
@@ -319,6 +324,12 @@ public class Flow {
                         }
                     }
                     builder.setBody(RequestBody.create(contentType, json));
+                } else if (!params.isEmpty()) {
+                    for (Map.Entry<String, String> entry : this.params.entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
+                        builder.addFormField(key, value, false);
+                    }
                 }
             }
 

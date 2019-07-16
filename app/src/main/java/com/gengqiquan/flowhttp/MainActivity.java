@@ -3,6 +3,7 @@ package com.gengqiquan.flowhttp;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -16,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
@@ -30,17 +32,23 @@ public class MainActivity extends AppCompatActivity {
                 .converter(GsonConverterFactory.create())
                 .client(new OkHttpClient
                         .Builder()
-                        .addNetworkInterceptor(new Interceptor() {
+                        .addInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
                             @Override
-                            public Response intercept(Chain chain) throws IOException {
-                                try {
-                                    Thread.sleep(3000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                return chain.proceed(chain.request());
+                            public void log(String message) {
+                                Log.e("EcgSDK", message);
                             }
-                        })
+                        }).setLevel(HttpLoggingInterceptor.Level.BODY))
+//                        .addNetworkInterceptor(new Interceptor() {
+//                            @Override
+//                            public Response intercept(Chain chain) throws IOException {
+//                                try {
+//                                    Thread.sleep(3000);
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                                return chain.proceed(chain.request());
+//                            }
+//                        })
                         .connectTimeout(10, TimeUnit.SECONDS)
                         .readTimeout(15, TimeUnit.SECONDS)
                         .writeTimeout(15, TimeUnit.SECONDS)
@@ -73,6 +81,12 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 try {
                     final Modell bean = Flow.with("https://api.apiopen.top/getJoke?page=1&count=2&type=video")
+                            .asJson()
+                            .post()
+                            .Params("int", "2")
+                            .Params("bool", true + "")
+                            .Params("string", "fsfsf")
+                            .Params("double", "6.8")
                             .await(Modell.class);
                     runOnUiThread(new Runnable() {
                         @Override

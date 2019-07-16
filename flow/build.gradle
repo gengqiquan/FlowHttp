@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 8
-        versionName "0.0.8"
+        versionCode 9
+        versionName "0.0.9"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -26,7 +26,7 @@ publish {
     userOrg = 'gengqiquan'//bintray.com用户名
     groupId = 'com.gengqiquan'//jcenter上的路径
     artifactId = 'flow'//项目名称
-    publishVersion = '0.0.8'//版本号
+    publishVersion = '0.0.9'//版本号
     desc = 'http client'//描述，不重要
     website = 'https://github.com/gengqiquan/FlowHttp'
 }
