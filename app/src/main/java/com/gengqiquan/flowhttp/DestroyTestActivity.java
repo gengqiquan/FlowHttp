@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.gengqiquan.flow.Flow;
-import com.gengqiquan.flow.http.Result;
+import com.gengqiquan.flow.http.SimpleResult;
 
 public class DestroyTestActivity extends AppCompatActivity {
 
@@ -21,7 +21,7 @@ public class DestroyTestActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Flow.with("recommendPoetry")
                         .bind(DestroyTestActivity.this)
-                        .listen(new Result<Modell>() {
+                        .listen(new SimpleResult<Modell>() {
                             @Override
                             public void success(Modell bean) {
                                 ((TextView) findViewById(R.id.tv_btn)).setText(bean.toString());

@@ -3,31 +3,20 @@ package com.gengqiquan.flowhttp;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.gengqiquan.flow.Flow;
-import com.gengqiquan.flow.converter.Converter;
-import com.gengqiquan.flow.http.Result;
 import com.gengqiquan.flow.http.TypeToken;
-import com.gengqiquan.flow.lifecycle.LifeEvent;
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
-import rx.Observable;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {

@@ -2,13 +2,13 @@ package com.gengqiquan.flow.interfaces;
 
 import android.support.annotation.NonNull;
 
-import com.gengqiquan.flow.http.CallBack;
+import com.gengqiquan.flow.http.Result;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 
 public interface Stream {
-    <T> void listen(@NonNull CallBack callBack);
+    <T> void listen(@NonNull Result result);
 
     <T> T await(Type cls) throws IOException;
 

@@ -25,7 +25,7 @@ Flow.init(new Flow.ConfigBuilder("https://api.apiopen.top/")
 
 ```
                     Flow.with("recommendPoetry")
-                        .listen(new Result<Modell>() {
+                        .listen(new SimpleResult<Modell>() {
                             @Override
                             public void success(Modell bean) {
                                 ((TextView) findViewById(R.id.tv_btn)).setText(bean.toString());
@@ -38,7 +38,7 @@ Flow.init(new Flow.ConfigBuilder("https://api.apiopen.top/")
 ```
                     Flow.with("recommendPoetry")
                         .put()
-                        .listen(new Result<Modell>() {
+                        .listen(new SimpleResult<Modell>() {
                             @Override
                             public void success(Modell bean) {
                                 ((TextView) findViewById(R.id.tv_btn)).setText(bean.toString());
@@ -52,7 +52,7 @@ Flow.init(new Flow.ConfigBuilder("https://api.apiopen.top/")
                     Flow.with("recommendPoetry")
                         .bind(StopTestActivity.this)
                   //    .lifeCircle(LifeEvent.STOP)//绑定到指定生命周期
-                        .listen(new Result<Modell>() {
+                        .listen(new SimpleResult<Modell>() {
                             @Override
                             public void success(Modell bean) {
                                 ((TextView) findViewById(R.id.tv_btn)).setText(bean.toString());
@@ -88,7 +88,7 @@ Flow.init(new Flow.ConfigBuilder("https://api.apiopen.top/")
 ###Gradle
 
 ```
-compile 'com.gengqiquan:flow:0.0.3'
+compile 'com.gengqiquan:flow:0.0.4'
 ```
 
 ### Future

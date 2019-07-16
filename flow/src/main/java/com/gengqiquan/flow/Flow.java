@@ -1,7 +1,6 @@
 package com.gengqiquan.flow;
 
 import android.app.Activity;
-import android.app.Application;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,7 +11,7 @@ import com.gengqiquan.flow.converter.ConverterFactory;
 import com.gengqiquan.flow.http.CallProxy;
 import com.gengqiquan.flow.http.HttpMethod;
 import com.gengqiquan.flow.http.RequestBuilder;
-import com.gengqiquan.flow.http.CallBack;
+import com.gengqiquan.flow.http.Result;
 import com.gengqiquan.flow.http.TypeToken;
 import com.gengqiquan.flow.scheduler.Scheduler;
 import com.gengqiquan.flow.interfaces.Stream;
@@ -282,8 +281,8 @@ public class Flow {
 
 
         @Override
-        public void listen(@NonNull CallBack callBack) {
-            builder().listen(callBack);
+        public void listen(@NonNull Result result) {
+            builder().listen(result);
         }
 
         @Override

@@ -71,15 +71,15 @@ public class CallProxy implements Stream {
     }
 
     @Override
-    public <T> void listen(@NonNull final CallBack callBack) {
+    public <T> void listen(@NonNull final Result result) {
         if (detach()) {
             Log.d("CallProxy", "request detach ");
             return;
         }
         watch();
-        final Type type = TypeToken.getType(callBack.getClass(), CallBack.class)[0];
+        final Type type = TypeToken.getType(result.getClass(), Result.class)[0];
 
-        callBack.start();
+        result.start();
         call.enqueue(new okhttp3.Callback() {
             @Override
             public void onResponse(Call call, final Response response) {
@@ -93,14 +93,14 @@ public class CallProxy implements Stream {
                         scheduler.schedule(new Runnable() {
                             @Override
                             public void run() {
-                                callBack.success(bean);
+                                result.success(bean);
                             }
                         });
                     } catch (final Exception e) {
                         scheduler.schedule(new Runnable() {
                             @Override
                             public void run() {
-                                callBack.error(e);
+                                result.error(e);
                             }
                         });
                     }
@@ -108,7 +108,7 @@ public class CallProxy implements Stream {
                     scheduler.schedule(new Runnable() {
                         @Override
                         public void run() {
-                            callBack.error(new HttpException(response));
+                            result.error(new HttpException(response));
 
                         }
                     });
@@ -125,7 +125,7 @@ public class CallProxy implements Stream {
                 scheduler.schedule(new Runnable() {
                     @Override
                     public void run() {
-                        callBack.error(new HttpException(e));
+                        result.error(new HttpException(e));
                     }
                 });
 

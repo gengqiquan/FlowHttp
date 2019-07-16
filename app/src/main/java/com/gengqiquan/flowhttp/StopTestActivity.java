@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.gengqiquan.flow.Flow;
-import com.gengqiquan.flow.http.Result;
+import com.gengqiquan.flow.http.SimpleResult;
 import com.gengqiquan.flow.lifecycle.LifeEvent;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public class StopTestActivity extends AppCompatActivity {
                 Flow.with("getJoke?page=1&count=2&type=video")
                         .bind(StopTestActivity.this)
                         .lifeCircle(LifeEvent.STOP)
-                        .listen(new Result<Modell<List<Detail>>>() {
+                        .listen(new SimpleResult<Modell<List<Detail>>>() {
                             @Override
                             public void success(Modell<List<Detail>> bean) {
                                 ((TextView) findViewById(R.id.tv_btn)).setText(bean.getResult().get(0).toString());
