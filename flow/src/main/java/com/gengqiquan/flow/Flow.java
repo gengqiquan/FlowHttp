@@ -34,6 +34,7 @@ import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 /**
  * 网络请求门面类
@@ -146,6 +147,8 @@ public class Flow {
         Converter converter;
         Map<String, String> params = new HashMap<>();
         Map<String, String> headers = new HashMap<>();
+        String json;
+        boolean asJson = false;
 
         private Builder(String url) {
             this.url = url;
@@ -181,6 +184,18 @@ public class Flow {
 
         public Builder contentType(@NonNull MediaType contentType) {
             this.contentType = contentType;
+            return this;
+        }
+
+        public Builder json(@NonNull String jsonStr) {
+            this.json = jsonStr;
+            asJson();
+            return this;
+        }
+
+        public Builder asJson() {
+            this.asJson = true;
+            this.contentType = MediaType.parse("application/json; charset=utf-8");
             return this;
         }
 
@@ -259,7 +274,7 @@ public class Flow {
         private Stream builder() {
             HttpUrl httpUrl = Flow.mBaseUrl;
             if (httpUrl == null) {
-                if(!this.url.startsWith("http")){
+                if (!this.url.startsWith("http")) {
                     throw new IllegalArgumentException("baseUrl is null");
                 }
                 String u = this.url.replace("://", "#*#");
@@ -274,13 +289,39 @@ public class Flow {
                 httpUrl = baseUrl(u);
             }
             RequestBuilder builder = new RequestBuilder(this.method.getValue(), httpUrl, this.url, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
-            if (!params.isEmpty()) {
-                for (Map.Entry<String, String> entry : this.headers.entrySet()) {
+            if (method == HttpMethod.GET && !params.isEmpty()) {
+                for (Map.Entry<String, String> entry : this.params.entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();
                     builder.addQueryParam(key, value, false);
                 }
+            } else if (method == HttpMethod.POST) {
+                if (!params.isEmpty()) {
+                    for (Map.Entry<String, String> entry : this.params.entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
+                        builder.addFormField(key, value, false);
+                    }
+                }
+                if (asJson) {
+                    if (json == null) {
+                        if (!params.isEmpty()) {
+                            json = "{";
+                            for (Map.Entry<String, String> entry : this.params.entrySet()) {
+                                String key = entry.getKey();
+                                String value = entry.getValue();
+                                json = json + "\"" + key + "\",\"" + value + "\",";
+                            }
+                            json = json.substring(0, json.length() - 1);
+                            json = json + "}";
+                        } else {
+                            json = "{}";
+                        }
+                    }
+                    builder.setBody(RequestBody.create(contentType, json));
+                }
             }
+
             Request request = builder.build();
             final Call call = getService().newCall(request);
             if (scheduler == null) {

@@ -61,8 +61,8 @@ public final class RequestBuilder {
     RequestBody body;
 
     public RequestBuilder(String method, HttpUrl baseUrl, @Nullable String relativeUrl,
-                   @Nullable Headers headers, @Nullable MediaType contentType, boolean hasBody,
-                   boolean isFormEncoded, boolean isMultipart) {
+                          @Nullable Headers headers, @Nullable MediaType contentType, boolean hasBody,
+                          boolean isFormEncoded, boolean isMultipart) {
         this.method = method;
         this.baseUrl = baseUrl;
         this.relativeUrl = relativeUrl;
@@ -157,7 +157,7 @@ public final class RequestBuilder {
         }
     }
 
-  public   void addQueryParam(String name, @Nullable String value, boolean encoded) {
+    public void addQueryParam(String name, @Nullable String value, boolean encoded) {
         if (relativeUrl != null) {
             // Do a one-time combination of the built relative URL and the base URL.
             urlBuilder = baseUrl.newBuilder(relativeUrl);
@@ -178,8 +178,8 @@ public final class RequestBuilder {
     }
 
     @SuppressWarnings("ConstantConditions")
-        // Only called when isFormEncoded was true.
-    void addFormField(String name, String value, boolean encoded) {
+    // Only called when isFormEncoded was true.
+    public void addFormField(String name, String value, boolean encoded) {
         if (encoded) {
             formBuilder.addEncoded(name, value);
         } else {
@@ -199,12 +199,12 @@ public final class RequestBuilder {
         multipartBuilder.addPart(part);
     }
 
-    void setBody(RequestBody body) {
+    public void setBody(RequestBody body) {
         this.body = body;
     }
 
 
-   public Request build() {
+    public Request build() {
         HttpUrl url;
         HttpUrl.Builder urlBuilder = this.urlBuilder;
         if (urlBuilder != null) {

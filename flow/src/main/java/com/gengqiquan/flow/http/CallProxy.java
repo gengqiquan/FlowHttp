@@ -125,7 +125,7 @@ public class CallProxy implements Stream {
                 scheduler.schedule(new Runnable() {
                     @Override
                     public void run() {
-                        result.error(new HttpException(e));
+                        result.error(e);
                     }
                 });
 
