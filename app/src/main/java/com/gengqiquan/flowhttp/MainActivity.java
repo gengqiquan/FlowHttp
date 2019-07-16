@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    final Modell bean = Flow.with("getJoke?page=1&count=2&type=video")
+                    final Modell bean = Flow.with("https://api.apiopen.top/getJoke?page=1&count=2&type=video")
                             .await(Modell.class);
                     runOnUiThread(new Runnable() {
                         @Override

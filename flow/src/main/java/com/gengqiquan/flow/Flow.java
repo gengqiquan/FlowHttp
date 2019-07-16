@@ -66,27 +66,27 @@ public class Flow {
         return mService;
     }
 
-    private static void baseUrl(HttpUrl baseUrl) {
+    private static HttpUrl baseUrl(HttpUrl baseUrl) {
         checkNotNull(baseUrl, "baseUrl == null");
         List<String> pathSegments = baseUrl.pathSegments();
         if (!"".equals(pathSegments.get(pathSegments.size() - 1))) {
             throw new IllegalArgumentException("baseUrl must end in /: " + baseUrl);
         }
-        Flow.mBaseUrl = baseUrl;
+        return baseUrl;
     }
 
-    private static void baseUrl(String baseUrl) {
+    private static HttpUrl baseUrl(String baseUrl) {
         checkNotNull(baseUrl, "baseUrl == null");
         HttpUrl httpUrl = HttpUrl.parse(baseUrl);
         if (httpUrl == null) {
             throw new IllegalArgumentException("Illegal URL: " + baseUrl);
         }
-        baseUrl(httpUrl);
+        return baseUrl(httpUrl);
     }
 
     public static void init(@NonNull ConfigBuilder builder) {
         synchronized (Flow.class) {
-            baseUrl(builder.baseUrl);
+            Flow.mBaseUrl = baseUrl(builder.baseUrl);
 
             if (builder.mService != null) {
                 mService = builder.mService;
@@ -257,7 +257,23 @@ public class Flow {
         }
 
         private Stream builder() {
-            RequestBuilder builder = new RequestBuilder(this.method.getValue(), Flow.mBaseUrl, this.url, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
+            HttpUrl httpUrl = Flow.mBaseUrl;
+            if (httpUrl == null) {
+                if(!this.url.startsWith("http")){
+                    throw new IllegalArgumentException("baseUrl is null");
+                }
+                String u = this.url.replace("://", "#*#");
+                String[] us = u.split("/");
+                if (us.length > 0) {
+                    u = us[0];
+                    u = u.replace("#*#", "://");
+                }
+                if (u.contains("#*#")) {
+                    throw new IllegalArgumentException("baseUrl is null");
+                }
+                httpUrl = baseUrl(u);
+            }
+            RequestBuilder builder = new RequestBuilder(this.method.getValue(), httpUrl, this.url, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
             if (!params.isEmpty()) {
                 for (Map.Entry<String, String> entry : this.headers.entrySet()) {
                     String key = entry.getKey();
