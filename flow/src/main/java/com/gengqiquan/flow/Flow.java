@@ -145,7 +145,7 @@ public class Flow {
         String url;
         Scheduler scheduler;
         Converter converter;
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         Map<String, String> headers = new HashMap<>();
         String json;
         boolean asJson = false;
@@ -154,17 +154,17 @@ public class Flow {
             this.url = url;
         }
 
-        public Builder Params(@NonNull Map<String, String> params) {
+        public Builder Params(@NonNull Map<String, Object> params) {
             this.params.putAll(params);
             return this;
         }
 
-        public Builder Params(@NonNull String key, String value) {
+        public Builder Params(@NonNull String key, Object value) {
             this.params.put(key, value);
             return this;
         }
 
-        public Builder ParamsNotNull(@NonNull String key, String value) {
+        public Builder ParamsNotNull(@NonNull String key, Object value) {
             if (isNULL(value)) {
                 return this;
             }
@@ -288,50 +288,8 @@ public class Flow {
                 }
                 httpUrl = baseUrl(u);
             }
-            RequestBuilder builder = new RequestBuilder(this.method.getValue(), httpUrl, this.url, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
-            if (method == HttpMethod.GET && !params.isEmpty()) {
-                for (Map.Entry<String, String> entry : this.params.entrySet()) {
-                    String key = entry.getKey();
-                    String value = entry.getValue();
-                    builder.addQueryParam(key, value, false);
-                }
-            } else if (method == HttpMethod.POST) {
-                if (asJson) {
-                    if (json == null) {
-                        if (!params.isEmpty()) {
-                            json = "{";
-                            for (Map.Entry<String, String> entry : this.params.entrySet()) {
-                                String key = entry.getKey();
-                                json = json + "\"" + key + "\":";
+            RequestBuilder builder = new RequestBuilder(this.method, httpUrl, this.url,asJson,json,params, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
 
-                                String value = entry.getValue();
-                                if (value == null) {
-                                    json = json + "null,";
-                                } else if (value.equalsIgnoreCase("true")) {
-                                    json = json + "true,";
-                                } else if (value.equalsIgnoreCase("false")) {
-                                    json = json + "false,";
-                                } else if (builder.isNumeric(value)) {
-                                    json = json + value + ",";
-                                } else {
-                                    json = json + "\"" + value + "\",";
-                                }
-                            }
-                            json = json.substring(0, json.length() - 1);
-                            json = json + "}";
-                        } else {
-                            json = "{}";
-                        }
-                    }
-                    builder.setBody(RequestBody.create(contentType, json));
-                } else if (!params.isEmpty()) {
-                    for (Map.Entry<String, String> entry : this.params.entrySet()) {
-                        String key = entry.getKey();
-                        String value = entry.getValue();
-                        builder.addFormField(key, value, false);
-                    }
-                }
-            }
 
             Request request = builder.build();
             final Call call = getService().newCall(request);
@@ -412,7 +370,7 @@ public class Flow {
         }
     }
 
-    public static boolean isNULL(String str) {
+    public static boolean isNULL(Object str) {
         return str == null || "null".equals(str) || "".equals(str);
 
     }

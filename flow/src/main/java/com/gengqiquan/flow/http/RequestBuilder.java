@@ -18,6 +18,7 @@ package com.gengqiquan.flow.http;
 import android.support.annotation.Nullable;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,10 +63,10 @@ public final class RequestBuilder {
     private @Nullable
     RequestBody body;
 
-    public RequestBuilder(String method, HttpUrl baseUrl, @Nullable String relativeUrl,
-                          @Nullable Headers headers, @Nullable MediaType contentType, boolean hasBody,
+    public RequestBuilder(HttpMethod method, HttpUrl baseUrl, @Nullable String relativeUrl, boolean asJson, String json,
+                          Map<String, Object> params, @Nullable Headers headers, @Nullable MediaType contentType, boolean hasBody,
                           boolean isFormEncoded, boolean isMultipart) {
-        this.method = method;
+        this.method = method.getValue();
         this.baseUrl = baseUrl;
         this.relativeUrl = relativeUrl;
         this.requestBuilder = new Request.Builder();
@@ -83,6 +84,51 @@ public final class RequestBuilder {
             // Will be set to 'body' in 'build'.
             multipartBuilder = new MultipartBody.Builder();
             multipartBuilder.setType(MultipartBody.FORM);
+        }
+        if (method == HttpMethod.GET && !params.isEmpty()) {
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue().toString();
+                addQueryParam(key, value, false);
+            }
+        } else if (method == HttpMethod.POST) {
+            if (asJson) {
+                if (json == null) {
+                    if (!params.isEmpty()) {
+                        json = "{";
+                        for (Map.Entry<String, Object> entry : params.entrySet()) {
+                            String key = entry.getKey();
+                            json = json + "\"" + key + "\":";
+
+                            Object value = entry.getValue();
+                            if (value == null) {
+                                json = json + "null,";
+                            } else if (value.toString().equalsIgnoreCase("true")) {
+                                json = json + "true,";
+                            } else if (value.toString().equalsIgnoreCase("false")) {
+                                json = json + "false,";
+                            } else if (value instanceof String) {
+                                json = json + "\"" + value + "\",";
+                            } else if (isNumeric(value.toString())) {
+                                json = json + value + ",";
+                            } else {
+                                json = json + "\"" + value + "\",";
+                            }
+                        }
+                        json = json.substring(0, json.length() - 1);
+                        json = json + "}";
+                    } else {
+                        json = "{}";
+                    }
+                }
+                setBody(RequestBody.create(contentType, json));
+            } else if (!params.isEmpty()) {
+                for (Map.Entry<String, Object> entry : params.entrySet()) {
+                    String key = entry.getKey();
+                    String value = entry.getValue().toString();
+                    addFormField(key, value, false);
+                }
+            }
         }
     }
 
@@ -159,7 +205,7 @@ public final class RequestBuilder {
         }
     }
 
-    public void addQueryParam(String name, @Nullable String value, boolean encoded) {
+    void addQueryParam(String name, @Nullable String value, boolean encoded) {
         if (relativeUrl != null) {
             // Do a one-time combination of the built relative URL and the base URL.
             urlBuilder = baseUrl.newBuilder(relativeUrl);
@@ -180,8 +226,8 @@ public final class RequestBuilder {
     }
 
     @SuppressWarnings("ConstantConditions")
-    // Only called when isFormEncoded was true.
-    public void addFormField(String name, String value, boolean encoded) {
+        // Only called when isFormEncoded was true.
+    void addFormField(String name, String value, boolean encoded) {
         if (encoded) {
             formBuilder.addEncoded(name, value);
         } else {
@@ -201,12 +247,12 @@ public final class RequestBuilder {
         multipartBuilder.addPart(part);
     }
 
-    public void setBody(RequestBody body) {
+    void setBody(RequestBody body) {
         this.body = body;
     }
 
-    public boolean isNumeric(String str) {
-        Pattern pattern = Pattern.compile("-?[0-9]+.?[0-9]+");
+    boolean isNumeric(String str) {
+        Pattern pattern = Pattern.compile("-?[0-9]+(.[0-9]+)?");
         Matcher isNum = pattern.matcher(str);
         if (!isNum.matches()) {
             return false;

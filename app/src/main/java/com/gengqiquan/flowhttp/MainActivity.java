@@ -80,13 +80,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
+                    String key=null;
                     final Modell bean = Flow.with("https://api.apiopen.top/getJoke?page=1&count=2&type=video")
                             .asJson()
                             .post()
-                            .Params("int", "2")
+                            .Params("int", 2)
+                            .Params("key", "66666")
+                            .Params("null", key)
                             .Params("bool", true + "")
                             .Params("string", "fsfsf")
-                            .Params("double", "6.8")
+                            .Params("double", 6.8f)
                             .await(Modell.class);
                     runOnUiThread(new Runnable() {
                         @Override
