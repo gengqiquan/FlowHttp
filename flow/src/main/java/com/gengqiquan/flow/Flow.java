@@ -49,7 +49,6 @@ public class Flow {
     private static Converter mConverter = ConverterFactory.StringConverter();
     ;
     private static MediaType mContentType;
-    private static Application mApp;
     private static HttpMethod mDefaultMethod = HttpMethod.GET;
 
     private static okhttp3.Call.Factory getService() {
@@ -86,9 +85,8 @@ public class Flow {
         baseUrl(httpUrl);
     }
 
-    public static void init(@NonNull Application application, @NonNull ConfigBuilder builder) {
+    public static void init(@NonNull ConfigBuilder builder) {
         synchronized (Flow.class) {
-            mApp = application;
             baseUrl(builder.baseUrl);
 
             if (builder.mService != null) {
@@ -277,7 +275,7 @@ public class Flow {
                 converter = Flow.mConverter;
             }
             if (lifecycleHolder != null) {
-                LifecycleProvider.get().get(mApp);
+                lifecycleHolder = LifecycleProvider.get().getApplicationLifecycle();
             }
             return new CallProxy(call, converter, scheduler, lifecycleHolder, lifeEvent);
         }

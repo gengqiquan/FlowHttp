@@ -9,7 +9,7 @@
 * 初始化
 
 ```
-Flow.init(getApplication(), new Flow.ConfigBuilder("https://api.apiopen.top/")
+Flow.init(new Flow.ConfigBuilder("https://api.apiopen.top/")
                .converter(GsonConverterFactory.create())
               );
 ```
@@ -88,7 +88,7 @@ Flow.init(getApplication(), new Flow.ConfigBuilder("https://api.apiopen.top/")
 ###Gradle
 
 ```
-compile 'com.gengqiquan:flow:0.0.2'
+compile 'com.gengqiquan:flow:0.0.3'
 ```
 
 ### Future

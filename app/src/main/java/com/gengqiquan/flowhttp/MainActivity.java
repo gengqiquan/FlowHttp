@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setTitle("MainActivity");
-        Flow.init(getApplication(), new Flow.ConfigBuilder("https://api.apiopen.top/")
+        Flow.init(new Flow.ConfigBuilder("https://api.apiopen.top/")
                 .converter(GsonConverterFactory.create())
                 .client(new OkHttpClient
                         .Builder()

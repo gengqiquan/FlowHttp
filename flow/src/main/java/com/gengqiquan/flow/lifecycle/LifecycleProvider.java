@@ -51,7 +51,7 @@ public class LifecycleProvider implements Handler.Callback {
     /**
      * Application can not listen
      */
-    public LifecycleHolder get(Context context) {
+    private LifecycleHolder get(Context context) {
         if (context == null) {
             throw new IllegalArgumentException("You cannot start a load on a null Context");
         } else if (!isOnMainThread() && !(context instanceof Application)) {
@@ -64,12 +64,12 @@ public class LifecycleProvider implements Handler.Callback {
             }
         }
 
-        return getApplicationLifecycle(context);
+        return getApplicationLifecycle();
     }
 
     private volatile LifecycleHolder applicationLifecycle;
 
-    private LifecycleHolder getApplicationLifecycle(Context context) {
+    public LifecycleHolder getApplicationLifecycle() {
         // Either an application context or we're on a background thread.
         if (applicationLifecycle == null) {
             synchronized (this) {
