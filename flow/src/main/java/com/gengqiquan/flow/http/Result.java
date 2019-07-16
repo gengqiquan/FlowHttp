@@ -5,5 +5,5 @@ public interface Result<T> {
 
     void start();
 
-    void error(Throwable throwable);
+    void error(Exception e);
 }

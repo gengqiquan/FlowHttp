@@ -17,7 +17,7 @@ public class SimpleResult<T> implements Result<T> {
     }
 
     @Override
-    public void error(Throwable throwable) {
-        throwable.printStackTrace();
+    public void error(Exception e) {
+        e.printStackTrace();
     }
 }
