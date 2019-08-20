@@ -3,6 +3,7 @@ package com.gengqiquan.flowhttp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
@@ -31,6 +32,11 @@ public class StopTestActivity extends AppCompatActivity {
                             @Override
                             public void success(Modell<List<Detail>> bean) {
                                 ((TextView) findViewById(R.id.tv_btn)).setText(bean.getResult().get(0).toString());
+                            }
+
+                            @Override
+                            public void error(@NonNull Exception e) {
+
                             }
                         });
                 new Handler().postDelayed(new Runnable() {

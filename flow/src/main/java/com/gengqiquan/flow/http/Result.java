@@ -1,9 +1,11 @@
 package com.gengqiquan.flow.http;
 
+import android.support.annotation.NonNull;
+
 public interface Result<T> {
-    void success(T bean);
+    void success(@NonNull T model);
 
     void start();
 
-    void error(Exception e);
+    void error(@NonNull Exception e);
 }

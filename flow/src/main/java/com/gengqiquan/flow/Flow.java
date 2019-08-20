@@ -34,7 +34,6 @@ import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 
 /**
  * 网络请求门面类
@@ -288,21 +287,19 @@ public class Flow {
                 }
                 httpUrl = baseUrl(u);
             }
-            RequestBuilder builder = new RequestBuilder(this.method, httpUrl, this.url,asJson,json,params, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
+            RequestBuilder builder = new RequestBuilder(this.method, httpUrl, this.url, asJson, json, params, parseHeaders(), contentType, hasBody(), isFormEncoded(), isMultipart());
 
 
             Request request = builder.build();
             final Call call = getService().newCall(request);
-            if (scheduler == null) {
-                scheduler = AndroidSchedulers.mainThread();
-            }
+
             if (converter == null) {
                 converter = Flow.mConverter;
             }
-            if (lifecycleHolder != null) {
+            if (lifecycleHolder == null) {
                 lifecycleHolder = LifecycleProvider.get().getApplicationLifecycle();
             }
-            return new CallProxy(call, converter, scheduler, lifecycleHolder, lifeEvent);
+            return new CallProxy(call, converter,  lifecycleHolder, lifeEvent);
         }
 
 

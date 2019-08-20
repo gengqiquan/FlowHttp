@@ -6,18 +6,8 @@ package com.gengqiquan.flow.http;
  * @author gengqiquan
  * @date 2019-07-09 15:28
  */
-public class SimpleResult<T> implements Result<T> {
-    @Override
-    public void success(T bean) {
-
-    }
-
+public abstract class SimpleResult<T> implements Result<T> {
     @Override
     public void start() {
-    }
-
-    @Override
-    public void error(Exception e) {
-        e.printStackTrace();
     }
 }

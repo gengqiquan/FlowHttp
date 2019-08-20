@@ -88,7 +88,7 @@ Flow.init(new Flow.ConfigBuilder("https://api.apiopen.top/")
 ###Gradle
 
 ```
-compile 'com.gengqiquan:flow:0.1.1'
+compile 'com.gengqiquan:flow:0.1.3'
 ```
 
 ### Future

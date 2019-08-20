@@ -2,6 +2,7 @@ package com.gengqiquan.flowhttp;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
@@ -25,6 +26,11 @@ public class DestroyTestActivity extends AppCompatActivity {
                             @Override
                             public void success(Modell bean) {
                                 ((TextView) findViewById(R.id.tv_btn)).setText(bean.toString());
+                            }
+
+                            @Override
+                            public void error(@NonNull Exception e) {
+
                             }
                         });
                 new Handler().postDelayed(new Runnable() {

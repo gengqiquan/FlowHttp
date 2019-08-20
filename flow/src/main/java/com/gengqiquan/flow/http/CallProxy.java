@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.gengqiquan.flow.converter.Converter;
+import com.gengqiquan.flow.scheduler.AndroidSchedulers;
 import com.gengqiquan.flow.scheduler.Scheduler;
 import com.gengqiquan.flow.interfaces.Stream;
 import com.gengqiquan.flow.interfaces.Transformer;
@@ -30,10 +31,10 @@ public class CallProxy implements Stream {
     LifecycleHolder lifecycleHolder;
     LifeEvent lifeEvent;
 
-    public CallProxy(Call call, Converter converter, Scheduler scheduler, LifecycleHolder lifecycleHolder, LifeEvent lifeEvent) {
+    public CallProxy(Call call, Converter converter, LifecycleHolder lifecycleHolder, LifeEvent lifeEvent) {
         this.call = call;
         this.converter = converter;
-        this.scheduler = scheduler;
+        this.scheduler = AndroidSchedulers.mainThread();
         this.lifecycleHolder = lifecycleHolder;
         this.lifeEvent = lifeEvent;
 
